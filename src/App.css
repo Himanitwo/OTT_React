@@ -13,7 +13,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
-  background: url('C:\Ott_internship\react_pages\ott_react\img\background rectangle.png') center/cover no-repeat;
+  background: url('../img/background rectangle.png') center/cover no-repeat;
   height: 100vh;
   display: flex;
   align-items: center;
