@@ -1,0 +1,84 @@
+/* src/App.css */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.478); /* adjust for darkness */
+  z-index: -1;
+}
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: url('C:\Ott_internship\react_pages\ott_react\img\background rectangle.png') center/cover no-repeat;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  z-index: 0;
+  position: relative;
+}
+
+.signup-container {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.993);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(99, 198, 56, 0.742);
+  color: white;
+  width: 600px;
+  height: 750px;
+  margin-left: 300px; 
+}
+
+.signup-form{
+  
+  color: rgb(0, 0, 0);
+  align-items: center;
+  justify-content:center;
+}
+.signup-form h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.signup-form label {
+  margin-top: 10px;
+  display: block;
+  font-size: 0.9rem;
+  margin-left:15%;
+}
+.signup-form input,
+.signup-form button {
+  display: block;
+  margin: 0 auto; /* This centers block-level elements */
+}
+.signup-form input {
+  width: 70%;
+  padding: 10px;
+  border-radius: 40px;
+  border: solid 1px black;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  background-color: rgb(255, 255, 255);
+}
+
+.signup-form button {
+  width: 60%;
+  padding: 10px;
+  border: none;
+  border-radius: 20px;
+  background-color: #a2ff00e4;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+}
+.formitem{
+  padding:10px;
+}
