@@ -1,26 +1,45 @@
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./pages/Navbar";
-import Sidebar from "./pages/sidebar";
+import Sidebar from "./pages/sidebar"; // capital S
 
 import MarathiPlayHome from "./pages/Homepage";
-import explore from "./pages/Explore.jsx";
-import setting from "./pages/Settings.jsx";
+import Explore from "./pages/Explore"; // Uppercase
+import Settings from "./pages/Settings"; // Uppercase
 import LoginPage from "./pages/LoginPage";
-//import Products from "./pages/Products";
 
 const App = () => {
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+
   return (
     <Router>
-      <Navbar />
-      <Sidebar />
-      <Routes>
-        <Route path="/" element={<MarathiPlayHome />} />
-        <Route path="/explore" element={<explore />} />
-        <Route path="/setting" element={<setting />} />
-        <Route path="/loginpage" element={<LoginPage />} />
-        
-      </Routes>
+      <div className="flex flex-col h-screen">
+        {/* Navbar at top */}
+        <Navbar />
+
+        {/* Flex container for sidebar + main content */}
+        <div className="flex flex-1">
+          {/* Sidebar */}
+          <Sidebar
+            isExpanded={isSidebarExpanded}
+            setIsExpanded={setIsSidebarExpanded}
+          />
+
+          {/* Main content */}
+          <main
+            className={`transition-all duration-300 flex-1 ${
+              isSidebarExpanded ? "ml-64" : "ml-16"
+            }`}
+          >
+            <Routes>
+              <Route path="/" element={<MarathiPlayHome />} />
+              <Route path="/explore" element={<explore />} />
+              <Route path="/setting" element={<settings />} />
+              <Route path="/loginpage" element={<LoginPage />} />
+            </Routes>
+          </main>
+        </div>
+      </div>
     </Router>
   );
 };
