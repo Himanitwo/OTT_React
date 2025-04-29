@@ -1,5 +1,6 @@
 import HeroBanner from './HeroBanner';
 import MovieSection from './MovieSection';
+import GenreSection from './GenreSection';
 
 import { newReleases, recommendations, popularMovies } from '../../data'; // TWO dots here 
 // import the data
@@ -12,6 +13,8 @@ function Homepage() {
     
     <div className='bg-black text-white min-h-screen'>
       <HeroBanner />
+
+      <GenreSection />
       <MovieSection title="New Releases" movies={newReleases} />
       <MovieSection title="Recommendation" movies={recommendations} />
       <MovieSection title="Popular In Your Region" movies={popularMovies} />
