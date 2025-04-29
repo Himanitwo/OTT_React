@@ -4,7 +4,7 @@ import Navbar from "./pages/Navbar";
 import Sidebar from "./pages/sidebar"; // capital S
 
 import Homepage from "./pages/Homepage/Homepage";
-import Explore from "./pages/Explore"; // Uppercase
+import Explore from "./pages/Explore/Explore"; // Uppercase
 import Settings from "./pages/Settings"; // Uppercase
 import LoginPage from "./pages/LoginPage";
 
