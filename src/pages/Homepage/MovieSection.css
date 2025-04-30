@@ -1,0 +1,22 @@
+.movie-section {
+    margin: 2rem 1rem;
+  }
+  
+  .movie-section h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: white;
+    padding-left: 10px;
+  }
+  
+  .movie-row {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    padding: 10px;
+  }
+  
+  .movie-row::-webkit-scrollbar {
+    display: none;
+  }
+  
