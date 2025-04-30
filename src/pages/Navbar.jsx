@@ -18,10 +18,10 @@ const Navbar = () => {
               </svg>
             </button>
             <a href="/" className="flex ms-2">
-              <img src="https://flowbite.com/docs/images/logo.svg" className="h-8 me-3" />
-              <span className="text-xl font-semibold text-gray-800 dark:text-white">
+              {/* <img src="https://flowbite.com/docs/images/logo.svg" className="h-8 me-3" /> */}
+              {/* <span className="text-xl font-semibold text-gray-800 dark:text-white">
                 Flowbite
-              </span>
+              </span> */}
             </a>
           </div>
           <div className="flex items-center">
