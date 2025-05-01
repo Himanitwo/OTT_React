@@ -6,8 +6,11 @@ import MovieDetailPage from "./pages/moviedetail";
 import Homepage from "./pages/Homepage/Homepage";
 import Explore from "./pages/Explore/Explore"; // Uppercase
 import Settings from "./pages/Settings"; // Uppercase
+
 import LoginPage from "./pages/LoginPage";
 import WatchPage from "./pages/watchnow";
+import FelciSignup from "./pages/felsignup"; // SignUp page
+
 const App = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
@@ -38,7 +41,8 @@ const App = () => {
                 <Route path="/setting" element={<Settings />} />
                 <Route path="/loginpage" element={<LoginPage />} />
                 <Route path="/movie/:id" element={<MovieDetailPage />} /> {/* Dynamic route for movie details */}
-                <Route path="/watch/:id" element={<WatchPage />} />
+                <Route path="/watch/:id" element={<WatchPage />}/>
+                <Route path="/signup" element={<FelciSignup />} />
 
               </Routes>
             </main>

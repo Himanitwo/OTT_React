@@ -1,73 +1,66 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const LoginPage = () => {
   return (
     <div
-      className="bg-cover bg-center h-screen flex items-center justify-center"
+      className="h-screen w-full bg-cover bg-center flex items-center justify-center relative overflow-hidden"
       style={{
-        backgroundImage:
-          "url('c2579e48-abf8-4a3a-b7e5-bb8bfd141a94.png')",
+        backgroundImage: `url('/img/background rectangle.png')`,
+        backgroundColor: "black"
       }}
     >
-      <div className="bg-black bg-opacity-80 p-8 rounded-2xl w-96 shadow-xl text-white">
-        <h2 className="text-2xl font-semibold mb-1">Welcome Back</h2>
-        <p className="mb-6 text-lg">Login</p>
+      {/* Blurred Background Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-green-700/70 backdrop-blur-xs z-0"></div>
 
-        <div className="mb-4">
-          <label className="block text-sm mb-1" htmlFor="username">
+      {/* Glassmorphism Login Card */}
+      <div className="relative z-10 bg-black/30 backdrop-blur-md p-16 rounded-2xl w-126 h-160 border border-white/20 shadow-2xl">
+        <h2 className="text-3xl text-white font-bold text-center mb-4">Welcome Back</h2>
+        <p className="text-white text-center text-3xl mb-10">Login</p>
+
+        <div className="mb-8">
+          <label htmlFor="username" className="text-white text-xl">
             Username or email
           </label>
           <input
             id="username"
             type="text"
             placeholder="Enter username or email id"
-            className="w-full px-4 py-2 rounded-full bg-transparent border border-gray-400 focus:outline-none focus:ring-2 focus:ring-lime-400"
+            className="w-full mt-1 p-4 rounded-full bg-transparent border border-white text-white placeholder-white focus:outline-none"
           />
         </div>
 
-        <div className="mb-6">
-          <label className="block text-sm mb-1" htmlFor="password">
+        <div className="mb-8">
+          <label htmlFor="password" className="text-white text-xl">
             Password
           </label>
           <input
             id="password"
             type="password"
             placeholder="Enter password"
-            className="w-full px-4 py-2 rounded-full bg-transparent border border-gray-400 focus:outline-none focus:ring-2 focus:ring-lime-400"
+            className="w-full mt-1 p-4 rounded-full bg-transparent border border-white text-white placeholder-white focus:outline-none"
           />
         </div>
 
-        <button className="w-full bg-lime-400 text-black font-bold py-2 rounded-full hover:bg-lime-300 transition">
+        <button className="w-full pt-4 bg-green-700 text-black text-xl font-bold py-2 rounded-full mb-6 hover:bg-green-500 transition">
           LOGIN
         </button>
 
-        <div className="text-center mt-6 text-sm">
-          <p>
-            not a member yet{" "}
-            <a
-              href="signuup.html"
-              className="text-lime-400 cursor-pointer hover:underline"
-            >
+        <div className="text-center">
+          <p className="text-white text-xl mb-4">
+            not a member yet?{" "}
+            <Link to="/signup" className="text-cyan-300 underline">
               SignUp
-            </a>
+            </Link> {/* Link to sign-up page */}
           </p>
 
-          <div className="flex items-center justify-center mt-2 space-x-2">
-            <a
-              href="signuup.html"
-              className="text-white cursor-pointer hover:underline"
-            >
-              SignUp
-            </a>
-            <span>|</span>
-            <button className="bg-white p-2 rounded-full">
-              <img
-                src="https://www.svgrepo.com/show/355037/google.svg"
-                alt="Google login"
-                className="w-5 h-5"
-              />
-            </button>
-          </div>
+          <button className="bg-white p-2 rounded-full hover:bg-gray-300 transition">
+            <img
+              src="https://www.svgrepo.com/show/355037/google.svg"
+              alt="Google"
+              className="w-5 h-5"
+            />
+          </button>
         </div>
       </div>
     </div>
