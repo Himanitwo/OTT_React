@@ -38,6 +38,8 @@ const Sidebar = ({ isExpanded, setIsExpanded }) => {
           <SidebarItem to="/explore" Icon={FaCompass} label="Explore" isExpanded={isExpanded} />
           <SidebarItem to="/setting" Icon={FaCog} label="Settings" isExpanded={isExpanded} />
           <SidebarItem to="/loginpage" Icon={FaSignInAlt} label="Loginpage" isExpanded={isExpanded} />
+          <SidebarItem to="/subscription" Icon={FaSignInAlt} label="Subscribe" isExpanded={isExpanded} />
+          <SidebarItem to="/watchlist" Icon={FaSignInAlt} label="Watchlist" isExpanded={isExpanded} />
         </ul>
       </div>
     </aside>
