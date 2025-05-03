@@ -14,7 +14,7 @@ const LoginPage = () => {
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-green-700/70 backdrop-blur-xs z-0"></div>
 
       {/* Glassmorphism Login Card */}
-      <div className="relative z-10 bg-black/30 backdrop-blur-md p-16 rounded-2xl w-126 h-160 border border-white/20 shadow-2xl">
+      <div className="relative z-10 bg-black/30 backdrop-blur-md p-16 rounded-2xl w-full max-w-md  border border-white/20 shadow-2xl">
         <h2 className="text-3xl text-white font-bold text-center mb-4">Welcome Back</h2>
         <p className="text-white text-center text-3xl mb-10">Login</p>
 

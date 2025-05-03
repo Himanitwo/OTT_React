@@ -11,6 +11,8 @@ import LoginPage from "./pages/LoginPage";
 import WatchPage from "./pages/watchnow";
 import FelciSignup from "./pages/felsignup"; // SignUp page
 import WatchlistPage from "./pages/watchlist";
+import Dashboard from "./pages/Dashboard";
+import SeriesDetailPage from "./pages/Seriesdetailpage";
 const App = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
@@ -31,9 +33,10 @@ const App = () => {
 
             {/* Main content */}
             <main
-              className={`transition-all duration-300 flex-1 ${
+              className={`transition-all duration-300 flex-1 pt-16 ${
                 isSidebarExpanded ? "ml-64" : "ml-16"
               }`}
+              
             >
               <Routes>
                 <Route path="/" element={<Homepage />} />
@@ -42,11 +45,10 @@ const App = () => {
                 <Route path="/loginpage" element={<LoginPage />} />
                 <Route path="/movie/:id" element={<MovieDetailPage />} /> {/* Dynamic route for movie details */}
                 <Route path="/watch/:id" element={<WatchPage />}/>
-                <Route path="/signup" element={<FelciSignup />}/>
                 <Route path="/subscription" element={<SubscriptionPage />}/>
                 <Route path="/watchlist" element={<WatchlistPage />}/>
-                
-
+                <Route path="/signup" element={<FelciSignup />} />
+                <Route path="/dashboard" element={<Dashboard />} />
               </Routes>
             </main>
           </div>
