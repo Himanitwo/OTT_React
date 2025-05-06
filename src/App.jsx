@@ -5,12 +5,11 @@ import Sidebar from "./pages/sidebar"; // capital S
 import MovieDetailPage from "./pages/moviedetail";
 import Homepage from "./pages/Homepage/Homepage";
 import Explore from "./pages/Explore/Explore"; // Uppercase
-import Settings from "./pages/Settingpage/SettingsPage"; // Uppercase
 import SubscriptionPage from "./pages/subscription";
 import LoginPage from "./pages/LoginPage";
 import WatchPage from "./pages/watchnow";
 import FelciSignup from "./pages/felsignup"; // SignUp page
-import SettingsPage from "./pages/Settingpage/SettingsPage";
+import SettingsPage from "./pages/Settings/SettingsPage";
 import WatchlistPage from "./pages/watchlist";
 import WatchHistory from "./pages/WatchHistory";
 import Dashboard from "./pages/Dashboard";
