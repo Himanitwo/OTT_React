@@ -32,8 +32,8 @@ export default function CategoryNav({ onCategoryChange }) {
             className={`category-tab ${activeTab === category ? 'active' : ''}`}
             onClick={() => handleTabClick(category)}
           >
-            {category}
-            {category === 'Genre' && <span className="dropdown-arrow">v</span>}
+            {/* {category}
+            {category === 'Genre' && <span className="dropdown-arrow">v</span>} */}
           </li>
         ))}
       </ul>

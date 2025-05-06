@@ -6,8 +6,8 @@ import './ExplorePage.css';
 function Explore() {
   return (
     <div className="explore-page">
-      <CategoryNav />
       <SearchableAPIList />
+      <CategoryNav />
       
     </div>
   );
