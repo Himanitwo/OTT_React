@@ -1,20 +1,19 @@
 import { Link } from 'react-router-dom';
+import './SeriesSection.css';
 
 function SeriesSection({ title, series }) {
   return (
-    <div className="px-6 mb-8">
-      <h2 className="text-2xl font-semibold mb-4">{title}</h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="series-section">
+      <h2 className="section-title">{title}</h2>
+      <div className="series-grid">
         {series.map(item => (
-          <Link to={`/series/${item.id}`} key={item.id}>
-            <div className="bg-gray-800 rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300">
-              <img src={item.image} alt={item.title} className="w-full h-60 object-cover" />
-              <div className="p-2">
-                <h3 className="text-lg font-semibold">{item.title}</h3>
-                <p className="text-sm text-gray-400">{item.genre} • {item.year}</p>
-              </div>
-            </div>
-          </Link>
+          <div className="series-card" key={item.id}>
+            <Link to={`/series/${item.id}`}>
+              <img src={`/assets/${item.image}`} alt={item.title} />
+              <h3>{item.title}</h3>
+              <p>{item.genre} • {item.year}</p>
+            </Link>
+          </div>
         ))}
       </div>
     </div>

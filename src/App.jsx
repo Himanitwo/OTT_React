@@ -49,6 +49,7 @@ const App = () => {
                 <Route path="/watchlist" element={<WatchlistPage />}/>
                 <Route path="/signup" element={<FelciSignup />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/series/:id" element={<SeriesDetailPage />} />
               </Routes>
             </main>
           </div>
