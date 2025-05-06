@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaHome, FaCompass, FaCog, FaSignInAlt, FaBell } from "react-icons/fa";
+import { FaHome, FaCompass, FaCog, FaSignInAlt, FaBell, FaPhone } from "react-icons/fa";
 
 const SidebarItem = ({ to, Icon, label, isExpanded }) => {
   return (
@@ -38,6 +38,7 @@ const Sidebar = ({ isExpanded, setIsExpanded }) => {
           <SidebarItem to="/setting" Icon={FaCog} label="Settings" isExpanded={isExpanded} />
           <SidebarItem to="/loginpage" Icon={FaSignInAlt} label="Loginpage" isExpanded={isExpanded} />
           <SidebarItem to="/subscription" Icon={FaBell} label="Subscribe" isExpanded={isExpanded} />
+          <SidebarItem to="/contact" Icon={FaPhone} label="Contact us" isExpanded={isExpanded} />
         </ul>
       </div>
     </aside>

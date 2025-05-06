@@ -62,7 +62,7 @@ const Dashboard = () => {
       >
         <h2 className="text-lg font-semibold mb-3 text-[#f5e0a9]">Profiles</h2>
 
-        <div className="max-w-sm bg-[#ffffff1a] backdrop-blur-md rounded-xl p-6 shadow-lg border border-[#f5e0a9]/30">
+        <div className="max-w-sm ">
           <div className="grid grid-cols-3 gap-6">
             {/* Himani Profile */}
             <div className="flex flex-col items-center">
