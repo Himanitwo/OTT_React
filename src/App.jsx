@@ -14,6 +14,7 @@ import WatchlistPage from "./pages/watchlist";
 import WatchHistory from "./pages/WatchHistory";
 import Dashboard from "./pages/Dashboard";
 import SeriesDetailPage from "./pages/Seriesdetailpage";
+import ContactPage from "./pages/contactpage";
 const App = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
@@ -51,6 +52,8 @@ const App = () => {
                 <Route path="/signup" element={<FelciSignup />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/Watchhistory" element={<WatchHistory/>} />
+                <Route path="/series/:id" element={<SeriesDetailPage />} /> 
+                <Route path="/contact" element={<ContactPage />} />
               </Routes>
             </main>
           </div>
