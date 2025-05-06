@@ -10,7 +10,7 @@ function App() {
       }}
     >
       {/* Blurred Background Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-green-800/60 backdrop-blur-xs z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-green-900/80 backdrop-blur-xs z-0"></div>
 
       {/* Glassmorphism SignUp Card with Aesthetic Design */}
       <form className="relative z-10 bg-white/20 backdrop-blur-xl border border-white/20 shadow-2xl p-12 rounded-3xl w-120 sm:w-128 lg:w-144 flex flex-col space-y-6">

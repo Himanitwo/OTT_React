@@ -11,7 +11,7 @@ const LoginPage = () => {
       }}
     >
       {/* Blurred Background Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-green-700/70 backdrop-blur-xs z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-green-900/70 backdrop-blur-xs z-0"></div>
 
       {/* Glassmorphism Login Card */}
       <div className="relative z-10 bg-black/30 backdrop-blur-md p-16 rounded-2xl w-full max-w-md  border border-white/20 shadow-2xl">
