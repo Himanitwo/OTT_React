@@ -105,4 +105,55 @@ export const popularMovies = [
     genre: "Sci-Fi",
     duration: "1h 57m",
   },
+ 
+];
+export const seriesList = [
+  {
+    id: "1",
+    title: "Dark",
+    image: "dark.jpg",
+    rating: "4.9",
+    description: "A family saga with a supernatural twist, set in a German town where the disappearance of two young children exposes the relationships among four families.",
+    year: 2017,
+    genre: "Sci-Fi",
+    director: "Baran bo Odar",
+    cast: ["Louis Hofmann", "Lisa Vicari", "Maja Schöne"],
+    seasons: [
+      {
+        number: 1,
+        episodes: [
+          {
+            title: "Secrets",
+            duration: "52m",
+            description: "The small German town of Winden is shaken by the disappearance of a young boy.",
+            thumb: "dark_s1e1.jpg"
+          },
+          {
+            title: "Lies",
+            duration: "45m",
+            description: "As the town’s secrets begin to surface, the lives of four families begin to unravel.",
+            thumb: "dark_s1e2.jpg"
+          }
+        ]
+      },
+      {
+        number: 2,
+        episodes: [
+          {
+            title: "Beginnings and Endings",
+            duration: "54m",
+            description: "Six months after the events of the first season, Jonas finds himself trapped in the future.",
+            thumb: "dark_s2e1.jpg"
+          },
+          {
+            title: "Dark Matter",
+            duration: "48m",
+            description: "Jonas works to return to his own time while the secrets of Winden deepen.",
+            thumb: "dark_s2e2.jpg"
+          }
+        ]
+      }
+    ]
+  },
+  // Add more series as needed
 ];

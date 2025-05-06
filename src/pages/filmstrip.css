@@ -1,0 +1,25 @@
+@keyframes scroll {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -1000px 0;
+  }
+}
+
+.filmstrip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: repeating-linear-gradient(
+    to right,
+    black 0px,
+    black 5px,
+    transparent 5px,
+    transparent 20px
+  );
+  animation: scroll 20s linear infinite;
+  z-index: -10;
+}
