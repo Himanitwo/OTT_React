@@ -1,0 +1,60 @@
+.settings-wrapper {
+    /* display: flex; */
+    max-width: 500px;
+    margin: 40px auto;
+    margin-top: 15vh;
+    padding: 20px;
+    color: #fff;
+    background: #111;
+    box-shadow: #8a8b8a54 0px 0px 20px;
+    border-radius: 12px;
+  }
+  
+  .settings-title {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .settings-section {
+    margin-bottom: 30px;
+  }
+  
+  .settings-section h2 {
+    margin-bottom: 12px;
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .settings-card {
+    background: #222;
+    border-radius: 10px;
+    padding: 10px;
+  }
+  
+  .setting-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 6px;
+    color: #ddd;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .setting-item:hover {
+    background: #333;
+  }
+  
+  .setting-icon {
+    margin-right: 12px;
+    font-size: 18px;
+    color: #aaa;
+  }
+  
+  .setting-label {
+    font-size: 16px;
+  }
+  
