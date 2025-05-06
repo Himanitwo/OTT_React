@@ -6,7 +6,7 @@ const LoginPage = () => {
     <div
       className="h-screen w-full bg-cover bg-center flex items-center justify-center relative overflow-hidden"
       style={{
-        backgroundImage: url('/img/background rectangle.png'),
+        backgroundImage: `url('/img/background rectangle.png')`,
         backgroundColor: "black"
       }}
     >
