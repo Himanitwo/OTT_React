@@ -11,6 +11,7 @@ import LoginPage from "./pages/LoginPage";
 import WatchPage from "./pages/watchnow";
 import FelciSignup from "./pages/felsignup"; // SignUp page
 import WatchlistPage from "./pages/watchlist";
+import WatchHistory from "./pages/WatchHistory";
 import Dashboard from "./pages/Dashboard";
 import SeriesDetailPage from "./pages/Seriesdetailpage";
 const App = () => {
@@ -49,6 +50,7 @@ const App = () => {
                 <Route path="/watchlist" element={<WatchlistPage />}/>
                 <Route path="/signup" element={<FelciSignup />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/Watchhistory" element={<WatchHistory/>} />
               </Routes>
             </main>
           </div>

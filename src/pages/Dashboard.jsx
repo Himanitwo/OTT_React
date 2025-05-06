@@ -1,10 +1,20 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom"; // ✅ Make sure Link is imported
 
 const fadeIn = {
   hidden: { opacity: 0, y: 30 },
   show: { opacity: 1, y: 0, transition: { duration: 0.6 } },
 };
+
+const watchlistItems = [
+  {
+    title: "Watchlist",
+    description:"Continue...",
+    link: "/watchlist",
+  },
+  // Add more items as needed
+];
 
 const Dashboard = () => {
   return (
@@ -45,6 +55,7 @@ const Dashboard = () => {
             <img
               src="https://i.imgur.com/3GvwNBf.png"
               className="w-14 h-14 rounded-full border-4 border-[#f5e0a9]"
+              alt="himani"
             />
             <p className="mt-2 text-sm font-medium">himani ✅</p>
           </div>
@@ -71,17 +82,53 @@ const Dashboard = () => {
         animate="show"
       >
         <h2 className="text-lg font-semibold mb-3 text-[#f5e0a9]">Watchlist</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          <motion.div whileHover={{ scale: 1.05 }} className="bg-[#1c2c2e] rounded-lg overflow-hidden shadow-lg">
-            <img
-              src="https://m.media-amazon.com/images/I/81gTwYAhU7L._AC_UF1000,1000_QL80_.jpg"
-              className="h-48 w-full object-cover"
-            />
-          </motion.div>
+        <div className="space-y-4">
+          {watchlistItems.map((item, index) => (
+            <Link to={item.link} key={index}>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                className="bg-[#1c2c2e] flex items-center gap-4 p-4 rounded-lg shadow cursor-pointer"
+              >
+                <div className="text-sm text-gray-200">
+                  <h3 className="font-semibold text-base text-[#f5e0a9]">
+                    {item.title}
+                  </h3>
+                  <p className="mt-1 text-[#80cbc4]">{item.description}</p>
+                </div>
+              </motion.div>
+            </Link>
+          ))}
         </div>
       </motion.section>
+          {/*history*/}
+      {/* Watch History */}
+<motion.section
+  className="mt-10"
+  variants={fadeIn}
+  initial="hidden"
+  animate="show"
+>
+  <h2 className="text-lg font-semibold mb-3 text-[#f5e0a9]">Watch History</h2>
+  <div className="space-y-4">
+    <Link to="/watchhistory">
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        className="bg-[#1c2c2e] flex items-center gap-4 p-4 rounded-lg shadow cursor-pointer"
+      >
+        <div className="text-sm text-gray-200">
+          <h3 className="font-semibold text-base text-[#f5e0a9]">
+            Watch History
+          </h3>
+          <p className="mt-1 text-[#80cbc4]">View what you watched earlier</p>
+        </div>
+      </motion.div>
+    </Link>
+  </div>
+</motion.section>
 
-      {/* Rented Films */}
+
+
+      {/* Rented Movies */}
       <motion.section
         className="mt-10"
         variants={fadeIn}
@@ -94,6 +141,7 @@ const Dashboard = () => {
             <img
               src="https://upload.wikimedia.org/wikipedia/en/9/9c/Harishchandrachi_Factory%2C_2009_film_poster.jpg"
               className="w-full h-40 object-cover rounded"
+              alt="Harishchandrachi Factory"
             />
             <p className="text-center mt-2 text-sm font-medium text-gray-100">
               Harishchandrachi Factory
@@ -103,6 +151,7 @@ const Dashboard = () => {
             <img
               src="https://upload.wikimedia.org/wikipedia/en/7/75/Natarang_%28film%29.jpg"
               className="w-full h-40 object-cover rounded"
+              alt="Natarang"
             />
             <p className="text-center mt-2 text-sm font-medium text-gray-100">
               Natarang
@@ -112,32 +161,8 @@ const Dashboard = () => {
       </motion.section>
 
       {/* Continue Watching */}
-      <motion.section
-        className="mt-10"
-        variants={fadeIn}
-        initial="hidden"
-        animate="show"
-      >
-        <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-[#f5e0a9]">
-            Continue Watching for himani
-          </h2>
-          <a
-            href="#"
-            className="text-sm text-[#80cbc4] hover:text-[#f5e0a9]"
-          >
-            View All →
-          </a>
-        </div>
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          <motion.div whileHover={{ scale: 1.05 }} className="bg-[#1c2c2e] rounded-lg overflow-hidden shadow-lg">
-            <img
-              src="https://rukminim1.flixcart.com/image/300/300/jzn0tjk0/book/1/3/0/natrang-original-imafjhm8cpmcu5fy.jpeg"
-              className="w-full h-48 object-cover"
-            />
-          </motion.div>
-        </div>
-      </motion.section>
+      
+       
     </div>
   );
 };
