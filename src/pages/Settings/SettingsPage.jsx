@@ -1,49 +1,46 @@
-// src/pages/Settings/SettingsPage.jsx
-
+// src/components/SettingsPage.jsx
 import React from 'react';
 import './SettingsPage.css';
-import { FaUser, FaShieldAlt, FaBell, FaLock, FaClipboardList, FaQuestionCircle, FaFileContract, FaBug, FaSignOutAlt } from 'react-icons/fa';
 
-export default function SettingsPage() {
+function SettingsPage() {
   return (
-    <div className="settings-wrapper">
-      <h1 className="settings-title">Settings</h1>
+    <div className="settings-container">
+      <aside className="sidebar">
+        <h2>Settings</h2>
+        <ul>
+          <li className="active">Account</li>
+          <li>Subscription & Billing</li>
+          <li>Profiles & Parental Controls</li>
+          <li>Playback Settings</li>
+          <li>Notifications</li>
+          <li>Downloads & Devices</li>
+          <li>Data & Privacy</li>
+          <li>Help Center</li>
+        </ul>
+      </aside>
 
-      <div className="settings-section">
-        <h2>Account</h2>
-        <div className="settings-card">
-          <SettingItem icon={<FaUser />} label="Edit profile" />
-          <SettingItem icon={<FaShieldAlt />} label="Security" />
-          <SettingItem icon={<FaBell />} label="Notifications" />
-          <SettingItem icon={<FaLock />} label="Privacy" />
+      <main className="main-content">
+        <h1>Account</h1>
+        <div className="account-info">
+          <img
+            className="profile-pic"
+            src="https://via.placeholder.com/100"
+            alt="User avatar"
+          />
+          <div className="details">
+            <h2>John Doe <span className="role-badge">Owner</span></h2>
+            <p>john.doe@example.com</p>
+          </div>
         </div>
-      </div>
 
-      <div className="settings-section">
-        <h2>Support & About</h2>
-        <div className="settings-card">
-          <SettingItem icon={<FaClipboardList />} label="My Subscriptions" />
-          <SettingItem icon={<FaQuestionCircle />} label="Help & Support" />
-          <SettingItem icon={<FaFileContract />} label="Terms & Conditions" />
+        <div className="actions">
+          <button>Change Password</button>
+          <button>Manage Profiles</button>
+          <button className="danger">Delete Account</button>
         </div>
-      </div>
-
-      <div className="settings-section">
-        <h2>Actions</h2>
-        <div className="settings-card">
-          <SettingItem icon={<FaBug />} label="Report a problem" />
-          <SettingItem icon={<FaSignOutAlt />} label="Logout" />
-        </div>
-      </div>
+      </main>
     </div>
   );
 }
 
-function SettingItem({ icon, label }) {
-  return (
-    <div className="setting-item">
-      <span className="setting-icon">{icon}</span>
-      <span className="setting-label">{label}</span>
-    </div>
-  );
-}
+export default SettingsPage;

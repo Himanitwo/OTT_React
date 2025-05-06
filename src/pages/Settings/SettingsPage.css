@@ -1,60 +1,93 @@
-.settings-wrapper {
-    /* display: flex; */
-    max-width: 500px;
-    margin: 40px auto;
-    margin-top: 15vh;
-    padding: 20px;
-    color: #fff;
-    background: #111;
-    box-shadow: #8a8b8a54 0px 0px 20px;
-    border-radius: 12px;
-  }
-  
-  .settings-title {
-    text-align: center;
-    margin-bottom: 30px;
-    font-size: 28px;
-    font-weight: bold;
-  }
-  
-  .settings-section {
-    margin-bottom: 30px;
-  }
-  
-  .settings-section h2 {
-    margin-bottom: 12px;
-    color: #fff;
-    font-size: 18px;
-    font-weight: bold;
-  }
-  
-  .settings-card {
-    background: #222;
-    border-radius: 10px;
-    padding: 10px;
-  }
-  
-  .setting-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 12px;
-    border-radius: 6px;
-    color: #ddd;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  
-  .setting-item:hover {
-    background: #333;
-  }
-  
-  .setting-icon {
-    margin-right: 12px;
-    font-size: 18px;
-    color: #aaa;
-  }
-  
-  .setting-label {
-    font-size: 16px;
-  }
-  
+/* src/components/SettingsPage.css */
+.settings-container {
+  display: flex;
+  height: 100vh;
+  font-family: sans-serif;
+  background: #0d1117;
+  color: #c9d1d9;
+}
+
+.sidebar {
+  width: 240px;
+  background: #161b22;
+  padding: 20px;
+  border-right: 1px solid #30363d;
+}
+
+.sidebar h2 {
+  color: #58a6ff;
+  margin-bottom: 20px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  margin-bottom: 15px;
+  cursor: pointer;
+}
+
+.sidebar li.active {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.main-content {
+  flex: 1;
+  padding: 40px;
+}
+
+.main-content h1 {
+  margin-bottom: 30px;
+  color: #58a6ff;
+}
+
+.account-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.profile-pic {
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  margin-right: 20px;
+}
+
+.details h2 {
+  margin: 0;
+}
+
+.role-badge {
+  background-color: #238636;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-left: 8px;
+  color: white;
+}
+
+.actions button {
+  background: #238636;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin-right: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  background: #2ea043;
+}
+
+.actions .danger {
+  background: #da3633;
+}
+
+.actions .danger:hover {
+  background: #f85149;
+}

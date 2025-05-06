@@ -23,6 +23,9 @@ const Dashboard = () => {
   const handleSubscribeClick = () => {
     navigate("/subscription");
   };
+  const handleSettingsClick = () => {
+    navigate("/setting");
+  };
 
   return (
     <div className="bg-black min-h-screen p-6 text-gray-100 font-['Poppins']">
@@ -47,7 +50,9 @@ const Dashboard = () => {
           >
             Subscribe
           </button>
-          <button className="bg-[#f5e0a9]/90 hover:bg-yellow-300 text-black px-4 py-1.5 rounded-md text-sm font-medium shadow-md backdrop-blur-sm transition">
+          <button 
+            onClick={handleSettingsClick}
+            className="bg-[#f5e0a9]/90 hover:bg-yellow-300 text-black px-4 py-1.5 rounded-md text-sm font-medium shadow-md backdrop-blur-sm transition">
             Help & Settings
           </button>
         </div>
