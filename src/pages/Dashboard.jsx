@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom"; // ✅ Added useNavigate
+import { Link, useNavigate } from "react-router-dom";
+import { Settings, HelpCircle, PlusCircle, User } from "lucide-react";
 
 const fadeIn = {
   hidden: { opacity: 0, y: 30 },
@@ -10,156 +11,143 @@ const fadeIn = {
 const watchlistItems = [
   {
     title: "Watchlist",
-    description: "Continue...",
+    description: "Continue watching your favorites",
     link: "/watchlist",
   },
-  // Add more items as needed
 ];
 
 const Dashboard = () => {
-  const navigate = useNavigate(); // ✅ Initialize navigate
+  const navigate = useNavigate();
 
-  // Handler for the Subscribe button click
-  const handleSubscribeClick = () => {
-    navigate("/subscription");
-  };
-  const handleSettingsClick = () => {
-    navigate("/setting");
-  };
+  const handleSubscribeClick = () => navigate("/subscription");
+  const handleSettingsClick = () => navigate("/setting");
 
   return (
-    <div className="bg-black min-h-screen p-6 text-gray-100 font-['Poppins']">
+    <div className="bg-gradient-to-b from-black via-[#001510] to-black min-h-screen p-6 text-gray-100 font-['Poppins']">
       {/* Header */}
       <motion.header
-        className="flex justify-between items-center border border-[#f5e0a9]/30 bg-[#00695c]/40 backdrop-blur-md px-6 py-4 rounded-2xl shadow-lg shadow-[#f5e0a9]/10"
+        className="flex justify-between items-center border border-[#f5e0a9]/30 bg-[#00695c]/30 backdrop-blur-xl px-8 py-5 rounded-3xl shadow-2xl shadow-[#f5e0a9]/10"
         variants={fadeIn}
         initial="hidden"
         animate="show"
       >
         <div>
-          <p className="text-sm text-[#80cbc4]">📞 +91 8********1</p>
-          <h1 className="text-xl font-semibold mt-1 text-[#f5e0a9] drop-shadow-sm">
+          <p className="text-xs text-[#80cbc4] tracking-wide">📞 +91 8********1</p>
+          <h1 className="text-2xl md:text-3xl font-bold mt-1 text-[#f5e0a9] drop-shadow tracking-tight">
             Subscribe to enjoy Marathi play 🎭
           </h1>
         </div>
         <div className="flex gap-3">
-          {/* Subscribe Button with Navigation */}
           <button
             onClick={handleSubscribeClick}
-            className="bg-[#e53935]/90 hover:bg-red-700 text-white px-4 py-1.5 rounded-md text-sm font-medium shadow-md backdrop-blur-sm transition"
+            className="bg-gradient-to-r from-red-500 via-red-400 to-red-500 hover:scale-105 hover:brightness-110 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200"
           >
-            Subscribe
+            <PlusCircle size={16} /> Subscribe
           </button>
-          <button 
+          <button
             onClick={handleSettingsClick}
-            className="bg-[#f5e0a9]/90 hover:bg-yellow-300 text-black px-4 py-1.5 rounded-md text-sm font-medium shadow-md backdrop-blur-sm transition">
-            Help & Settings
+            className="bg-gradient-to-r from-yellow-300 via-yellow-200 to-yellow-300 hover:scale-105 hover:brightness-110 text-black px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200"
+          >
+            <Settings size={16} /> Settings
           </button>
         </div>
       </motion.header>
 
       {/* Profiles */}
       <motion.section
-        className="mt-8"
+        className="mt-12 border-t border-[#f5e0a9]/20 pt-8"
         variants={fadeIn}
         initial="hidden"
         animate="show"
       >
-        <h2 className="text-lg font-semibold mb-3 text-[#f5e0a9]">Profiles</h2>
-
-        <div className="max-w-sm ">
-          <div className="grid grid-cols-3 gap-6">
-            {/* Himani Profile */}
-            <div className="flex flex-col items-center">
-              <img
-                src="https://i.imgur.com/3GvwNBf.png"
-                className="w-14 h-14 rounded-full border-4 border-[#f5e0a9] shadow-md"
-                alt="himani"
-              />
-              <p className="mt-2 text-sm font-medium text-[#f5e0a9]">himani ✅</p>
-            </div>
-
-            {/* Kids Profile */}
-            <div className="flex flex-col items-center">
-              <div className="bg-[#f5e0a9]/90 text-black w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold shadow-md">
-                👶
-              </div>
-              <p className="mt-2 text-sm font-medium text-[#f5e0a9]">Kids</p>
-            </div>
-
-            {/* Add Profile */}
-            <div className="flex flex-col items-center">
-              <div className="bg-[#004d40]/90 text-white w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold shadow-md">
-                +
-              </div>
-              <p className="mt-2 text-sm font-medium text-[#f5e0a9]">Add</p>
-            </div>
-          </div>
+        <h2 className="text-2xl font-semibold mb-6 text-[#f5e0a9] tracking-wide">Profiles</h2>
+        <div className="max-w-md mx-auto grid grid-cols-3 gap-6">
+          {[
+            { name: "himani ✅", img: "https://i.imgur.com/3GvwNBf.png" },
+            { name: "Kids", emoji: "👶" },
+            { name: "Add", icon: <PlusCircle size={32} /> },
+          ].map((profile, index) => (
+            <motion.div
+              key={index}
+              whileHover={{ scale: 1.12, rotate: 1 }}
+              className="flex flex-col items-center cursor-pointer transition-all"
+            >
+              {profile.img ? (
+                <img
+                  src={profile.img}
+                  className="w-20 h-20 rounded-full border-4 border-[#f5e0a9] shadow-lg hover:shadow-[#f5e0a9]/40 transition-all"
+                  alt={profile.name}
+                />
+              ) : (
+                <div className="bg-[#f5e0a9] text-black w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold shadow-lg">
+                  {profile.emoji || profile.icon}
+                </div>
+              )}
+              <p className="mt-2 text-sm font-medium text-[#f5e0a9]">{profile.name}</p>
+            </motion.div>
+          ))}
         </div>
       </motion.section>
 
       {/* Rented Movies */}
       <motion.section
-        className="mt-10"
+        className="mt-12 border-t border-[#f5e0a9]/20 pt-8"
         variants={fadeIn}
         initial="hidden"
         animate="show"
       >
-        <h2 className="text-lg font-semibold mb-3 text-[#f5e0a9]">Rented Movies</h2>
+        <h2 className="text-2xl font-semibold mb-6 text-[#f5e0a9] tracking-wide">Rented Movies</h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-          {/* Movie Card 1 */}
-          <motion.div
-            whileHover={{ scale: 1.03 }}
-            className="bg-[#ffffff0f] backdrop-blur-md border border-[#f5e0a9]/30 rounded-xl p-3 shadow-md transition-all duration-300"
-          >
-            <img
-              src="https://upload.wikimedia.org/wikipedia/en/9/9c/Harishchandrachi_Factory%2C_2009_film_poster.jpg"
-              className="w-full h-40 object-cover rounded-lg shadow-sm"
-              alt="Harishchandrachi Factory"
-            />
-            <p className="text-center mt-2 text-sm font-semibold text-[#f5e0a9]">
-              Harishchandrachi Factory
-            </p>
-          </motion.div>
-
-          {/* Movie Card 2 */}
-          <motion.div
-            whileHover={{ scale: 1.03 }}
-            className="bg-[#ffffff0f] backdrop-blur-md border border-[#f5e0a9]/30 rounded-xl p-3 shadow-md transition-all duration-300"
-          >
-            <img
-              src="https://upload.wikimedia.org/wikipedia/en/7/75/Natarang_%28film%29.jpg"
-              className="w-full h-40 object-cover rounded-lg shadow-sm"
-              alt="Natarang"
-            />
-            <p className="text-center mt-2 text-sm font-semibold text-[#f5e0a9]">
-              Natarang
-            </p>
-          </motion.div>
+          {[
+            {
+              title: "Harishchandrachi Factory",
+              img: "https://upload.wikimedia.org/wikipedia/en/9/9c/Harishchandrachi_Factory%2C_2009_film_poster.jpg",
+            },
+            {
+              title: "Natarang",
+              img: "https://upload.wikimedia.org/wikipedia/en/7/75/Natarang_%28film%29.jpg",
+            },
+          ].map((movie, idx) => (
+            <motion.div
+              key={idx}
+              whileHover={{ scale: 1.08 }}
+              className="relative bg-[#ffffff0f] backdrop-blur-md border border-[#f5e0a9]/20 rounded-2xl overflow-hidden shadow-lg hover:shadow-[#f5e0a9]/20 transition-all duration-300 group"
+            >
+              <img
+                src={movie.img}
+                className="w-full h-48 object-cover group-hover:brightness-75 transition-all"
+                alt={movie.title}
+              />
+              <div className="absolute inset-0 flex items-end justify-center opacity-0 group-hover:opacity-100 transition-all bg-gradient-to-t from-black/70 via-black/30 to-transparent">
+                <p className="text-center text-sm font-semibold text-[#f5e0a9] pb-3 px-2">
+                  {movie.title}
+                </p>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </motion.section>
 
       {/* Watchlist */}
       <motion.section
-        className="mt-10"
+        className="mt-12 border-t border-[#f5e0a9]/20 pt-8"
         variants={fadeIn}
         initial="hidden"
         animate="show"
       >
-        <h2 className="text-lg font-semibold mb-3 text-[#f5e0a9]">Watchlist</h2>
+        <h2 className="text-2xl font-semibold mb-6 text-[#f5e0a9] tracking-wide">Watchlist</h2>
         <div className="space-y-4">
           {watchlistItems.map((item, index) => (
             <Link to={item.link} key={index}>
               <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-[#1c2c2e] flex items-center gap-4 p-4 rounded-lg shadow cursor-pointer"
+                whileHover={{ scale: 1.04 }}
+                className="bg-[#1c2c2e]/80 border border-[#f5e0a9]/15 flex items-center gap-4 p-5 rounded-xl shadow-md hover:shadow-[#f5e0a9]/20 transition-all cursor-pointer"
               >
-                <div className="text-sm text-gray-200">
-                  <h3 className="font-semibold text-base text-[#f5e0a9]">
-                    {item.title}
-                  </h3>
-                  <p className="mt-1 text-[#80cbc4]">{item.description}</p>
+                <User size={24} className="text-[#80cbc4]" />
+                <div>
+                  <h3 className="font-semibold text-base text-[#f5e0a9]">{item.title}</h3>
+                  <p className="mt-1 text-[#80cbc4] text-sm">{item.description}</p>
                 </div>
               </motion.div>
             </Link>
@@ -169,27 +157,24 @@ const Dashboard = () => {
 
       {/* Watch History */}
       <motion.section
-        className="mt-10"
+        className="mt-12 border-t border-[#f5e0a9]/20 pt-8"
         variants={fadeIn}
         initial="hidden"
         animate="show"
       >
-        <h2 className="text-lg font-semibold mb-3 text-[#f5e0a9]">Watch History</h2>
-        <div className="space-y-4">
-          <Link to="/watchhistory">
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-[#1c2c2e] flex items-center gap-4 p-4 rounded-lg shadow cursor-pointer"
-            >
-              <div className="text-sm text-gray-200">
-                <h3 className="font-semibold text-base text-[#f5e0a9]">
-                  Watch History
-                </h3>
-                <p className="mt-1 text-[#80cbc4]">View what you watched earlier</p>
-              </div>
-            </motion.div>
-          </Link>
-        </div>
+        <h2 className="text-2xl font-semibold mb-6 text-[#f5e0a9] tracking-wide">Watch History</h2>
+        <Link to="/watchhistory">
+          <motion.div
+            whileHover={{ scale: 1.04 }}
+            className="bg-[#1c2c2e]/80 border border-[#f5e0a9]/15 flex items-center gap-4 p-5 rounded-xl shadow-md hover:shadow-[#f5e0a9]/20 transition-all cursor-pointer"
+          >
+            <HelpCircle size={24} className="text-[#80cbc4]" />
+            <div>
+              <h3 className="font-semibold text-base text-[#f5e0a9]">Watch History</h3>
+              <p className="mt-1 text-[#80cbc4] text-sm">View what you watched earlier</p>
+            </div>
+          </motion.div>
+        </Link>
       </motion.section>
     </div>
   );

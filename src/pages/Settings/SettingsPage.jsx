@@ -26,7 +26,7 @@ function SettingsPage() {
             <div className="account-info">
               <img
                 className="profile-pic"
-                src="https://via.placeholder.com/100"
+                src="https://i.imgur.com/3GvwNBf.png"
                 alt="User avatar"
               />
               <div className="details">
