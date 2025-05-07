@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const Navbar = () => {
   return (
-    <nav className="fixed top-0 z-50 w-full bg-teal-600 border-b border-teal-700 text-white">
+    <nav className="fixed top-0 z-50 w-full bg-black-600  text-white">
       <div className="px-3 py-3 lg:px-5 lg:pl-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
@@ -20,10 +20,10 @@ const Navbar = () => {
             </button>
             <a href="/" className="flex ms-2 text-lg font-semibold text-white">
               {/* Logo / Brand */}
-              Marathi Play
+              {/* Marathi Play */}
             </a>
           </div>
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <Link to="/dashboard">
               <img
                 className="w-8 h-8 rounded-full border-2 border-white cursor-pointer"
@@ -31,7 +31,7 @@ const Navbar = () => {
                 alt="User"
               />
             </Link>
-          </div>
+          </div> */}
         </div>
       </div>
     </nav>

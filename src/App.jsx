@@ -35,10 +35,10 @@ const App = () => {
 
             {/* Main content */}
             <main
-              className={`transition-all duration-300 flex-1 pt-16 ${
-                isSidebarExpanded ? "ml-64" : "ml-16"
-              }`}
-              
+              // className={`transition-all duration-300 flex-1 pt-16 ${
+              //   isSidebarExpanded ? "ml-64" : "ml-16"
+              // }`}
+              className={`transition-all duration-300 flex-1 ml-16 pt-0 }`}
             >
               <Routes>
                 <Route path="/" element={<Homepage />} />
