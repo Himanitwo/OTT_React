@@ -1,7 +1,7 @@
-import React from 'react';
-import { PlayCircle, Tv } from 'lucide-react';
+import React, { useState } from 'react';
+import { PlayCircle, Tv, Trash2 } from 'lucide-react';
 
-const continueWatch = [
+const initialContinueWatch = [
   {
     title: 'Oppenheimer',
     duration: '1h 22m',
@@ -14,7 +14,7 @@ const continueWatch = [
   },
 ];
 
-const trending = [
+const initialTrending = [
   { title: 'Oppenheimer', thumbnail: '/img/opp.jpg' },
   { title: 'Queen', thumbnail: '/img/queen.jpg' },
   { title: 'Jungle Book', thumbnail: '/img/jungle book.jpg' },
@@ -29,6 +29,17 @@ const series = [
 ];
 
 const Watchlist = () => {
+  const [continueWatchList, setContinueWatchList] = useState(initialContinueWatch);
+  const [watchlist, setWatchlist] = useState(initialTrending);
+
+  const handleDeleteContinue = (indexToDelete) => {
+    setContinueWatchList(prev => prev.filter((_, i) => i !== indexToDelete));
+  };
+
+  const handleDeleteWatchlist = (indexToDelete) => {
+    setWatchlist(prev => prev.filter((_, i) => i !== indexToDelete));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white px-10 py-14 font-sans space-y-16">
       
@@ -39,7 +50,7 @@ const Watchlist = () => {
           <h2 className="text-2xl font-bold">Continue Watching</h2>
         </div>
         <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-2">
-          {continueWatch.map((item, index) => (
+          {continueWatchList.map((item, index) => (
             <div
               key={index}
               className="relative min-w-[260px] h-40 rounded-xl overflow-hidden bg-gray-800 shadow-lg hover:scale-105 transition-transform"
@@ -53,8 +64,14 @@ const Watchlist = () => {
                 <p className="text-md font-semibold">{item.title}</p>
                 <p className="text-xs text-gray-300">{item.duration}</p>
               </div>
-              <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1">
-                <span className="text-sm">▶</span>
+              <div className="absolute top-2 right-2 flex gap-2">
+                <button
+                  onClick={() => handleDeleteContinue(index)}
+                  className="bg-black/60 rounded-full p-1 hover:bg-red-600"
+                  title="Delete"
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
             </div>
           ))}
@@ -68,16 +85,23 @@ const Watchlist = () => {
           <h2 className="text-2xl font-bold">Your Watchlist</h2>
         </div>
         <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-2">
-          {trending.map((item, index) => (
+          {watchlist.map((item, index) => (
             <div
               key={index}
-              className="min-w-[140px] h-56 rounded-xl overflow-hidden shadow-md bg-gray-900 hover:scale-105 transition-transform"
+              className="relative min-w-[140px] h-56 rounded-xl overflow-hidden shadow-md bg-gray-900 hover:scale-105 transition-transform"
             >
               <img
                 src={item.thumbnail}
                 alt={item.title}
                 className="w-full h-full object-cover"
               />
+              <button
+                onClick={() => handleDeleteWatchlist(index)}
+                className="absolute top-2 right-2 bg-black/60 rounded-full p-1 hover:bg-red-600"
+                title="Delete"
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
           ))}
         </div>
