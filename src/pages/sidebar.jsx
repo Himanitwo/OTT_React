@@ -19,10 +19,10 @@ const SidebarItem = ({ to, Icon, label, isExpanded }) => {
         className="group flex items-center space-x-4 p-2 text-white rounded-lg hover:bg-white/10 transition-colors duration-300"
       >
         <div className="min-w-[2rem] flex justify-center">
-          <Icon className="text-xl group-hover:text-yellow-300 drop-shadow-md" />
+          <Icon className="text-xl group-hover:text-gray-300 drop-shadow-md" />
         </div>
         {isExpanded && (
-          <span className="transition-opacity duration-300 whitespace-nowrap group-hover:text-yellow-300 drop-shadow-md">
+          <span className="transition-opacity duration-300 whitespace-nowrap group-hover:text-gray-300 drop-shadow-md">
             {label}
           </span>
         )}
