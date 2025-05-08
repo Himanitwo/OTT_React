@@ -14,7 +14,6 @@ function Homepage() {
     
     <div className='bg-black text-white min-h-screen'>  
       <HeroBanner />
-
       <GenreSection />
       <MovieSection title="New Releases" movies={newReleases} />
       <MovieSection title="Recommendation" movies={recommendations} />
