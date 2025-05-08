@@ -35,7 +35,7 @@ const WatchHistory = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-zinc-900 via-black to-black text-white px-4 lg:px-20 py-16 font-sans overflow-hidden">
+    <div className="relative min-h-screen  bg-gradient-to-b from-black via-gray-900 to-black  text-white px-4 lg:px-20 py-16 font-sans overflow-hidden">
       {/* Blurred Background */}
       <div className="absolute top-0 left-0 w-full h-full -z-10 overflow-hidden">
         <div className="absolute w-96 h-96 bg-teal-900 opacity-10 rounded-full blur-3xl -top-32 -left-32" />
