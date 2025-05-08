@@ -15,6 +15,7 @@ import WatchHistory from "./pages/WatchHistory";
 import Dashboard from "./pages/Dashboard";
 import SeriesDetailPage from "./pages/Seriesdetailpage";
 import ContactPage from "./pages/contactpage";
+import JotformAgent from "./Jotai";
 const App = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
@@ -59,6 +60,7 @@ const App = () => {
           </div>
         </div>
       </Router>
+      <JotformAgent />
     </>
   );
 };
