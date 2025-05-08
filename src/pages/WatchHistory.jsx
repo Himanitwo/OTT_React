@@ -88,7 +88,7 @@ const WatchHistory = () => {
                   <button className="flex items-center gap-1 text-sm bg-teal-600/70 hover:bg-teal-700 text-white px-2 py-1 rounded">
                     <PlayCircle className="text-white-500" size={16} /> Play
                   </button>
-                  <button className="flex items-center gap-1 text-sm bg-pink-600 hover:bg-blue-700 text-white px-2 py-1 rounded">
+                  <button className="flex items-center gap-1 text-sm bg-green-600 hover:bg-blue-700 text-white px-2 py-1 rounded">
                     <Download size={16} />
                   </button>
                   <button

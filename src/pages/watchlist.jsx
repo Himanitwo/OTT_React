@@ -35,7 +35,7 @@ const Watchlist = () => {
       {/* Continue Watching */}
       <section>
         <div className="flex items-center gap-2 mb-4">
-          <PlayCircle className="text-pink-500" size={28} />
+          <PlayCircle className="text-green-500" size={28} />
           <h2 className="text-2xl font-bold">Continue Watching</h2>
         </div>
         <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-2">

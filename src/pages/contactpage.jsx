@@ -85,7 +85,7 @@ function Contactpage() {
                       name="companyName"
                       value={formData.companyName}
                       onChange={handleChange}
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-600"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-600"
                       required
                     />
                   </div>
@@ -98,7 +98,7 @@ function Contactpage() {
                       name="contactPerson"
                       value={formData.contactPerson}
                       onChange={handleChange}
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-600"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-600"
                       required
                     />
                   </div>
@@ -111,7 +111,7 @@ function Contactpage() {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-600"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-600"
                       required
                     />
                   </div>
@@ -124,7 +124,7 @@ function Contactpage() {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-600"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-600"
                     />
                   </div>
 
@@ -136,7 +136,7 @@ function Contactpage() {
                       name="website"
                       value={formData.website}
                       onChange={handleChange}
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-600"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-600"
                       placeholder="https://"
                     />
                   </div>
@@ -160,7 +160,7 @@ function Contactpage() {
                       name="movieTitle"
                       value={formData.movieTitle}
                       onChange={handleChange}
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-600"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-600"
                       required
                     />
                   </div>
@@ -174,7 +174,7 @@ function Contactpage() {
                         name="genre"
                         value={formData.genre}
                         onChange={handleChange}
-                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-600"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-600"
                         required
                       />
                     </div>
@@ -186,7 +186,7 @@ function Contactpage() {
                         name="duration"
                         value={formData.duration}
                         onChange={handleChange}
-                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-600"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-600"
                         placeholder="e.g. 120 min"
                         required
                       />
@@ -201,7 +201,7 @@ function Contactpage() {
                       value={formData.synopsis}
                       onChange={handleChange}
                       rows="4"
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-600"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-600"
                       required
                     ></textarea>
                   </div>
@@ -214,7 +214,7 @@ function Contactpage() {
                       name="trailerLink"
                       value={formData.trailerLink}
                       onChange={handleChange}
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-600"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-600"
                       placeholder="https://"
                     />
                   </div>
@@ -223,7 +223,7 @@ function Contactpage() {
                   <div>
                     <label className="block text-sm font-medium mb-1">Upload Sample Video*</label>
                     <div 
-                      className="border-2 border-dashed border-gray-700 rounded-lg p-6 text-center cursor-pointer hover:border-pink-500 transition"
+                      className="border-2 border-dashed border-gray-700 rounded-lg p-6 text-center cursor-pointer hover:border-green-500 transition"
                       onClick={() => fileInputRef.current.click()}
                     >
                       <input
@@ -234,7 +234,7 @@ function Contactpage() {
                         className="hidden"
                         required
                       />
-                      <Upload size={40} className="mx-auto mb-3 text-pink-500" />
+                      <Upload size={40} className="mx-auto mb-3 text-green-500" />
                       <p className="font-medium">
                         {videoFile ? videoFile.name : 'Click to upload video file'}
                       </p>
@@ -245,7 +245,7 @@ function Contactpage() {
                       {uploadProgress > 0 && (
                         <div className="mt-3 w-full bg-gray-700 rounded-full h-2.5">
                           <div 
-                            className="bg-pink-600 h-2.5 rounded-full" 
+                            className="bg-green-600 h-2.5 rounded-full" 
                             style={{ width: `${uploadProgress}%` }}
                           ></div>
                         </div>
@@ -260,7 +260,7 @@ function Contactpage() {
                 type="submit"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="bg-pink-600 hover:bg-pink-700 text-white font-semibold px-6 py-4 rounded-lg transition w-full text-lg"
+                className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-4 rounded-lg transition w-full text-lg"
               >
                 Submit for Review
               </motion.button>

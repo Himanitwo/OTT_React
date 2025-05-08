@@ -106,7 +106,7 @@ function MovieDetailPage() {
             <motion.button
               onClick={() => navigate(`/watch/${movie.id}`)}
               whileHover={{ scale: 1.05 }}
-              className="bg-pink-600 hover:bg-pink-700 transition px-6 py-3 rounded-lg font-semibold text-lg w-full"
+              className="bg-green-600 hover:bg-green-700 transition px-6 py-3 rounded-lg font-semibold text-lg w-full"
             >
               ▶️ Watch Now
             </motion.button>
