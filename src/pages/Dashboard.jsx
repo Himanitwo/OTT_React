@@ -52,6 +52,34 @@ const Dashboard = () => {
           </button>
         </div>
       </motion.header>
+      {/* Referral Status */}
+<motion.section
+  className="mt-12 border-t border-[#f5e0a9]/20 pt-8"
+  variants={fadeIn}
+  initial="hidden"
+  animate="show"
+>
+  <h2 className="text-2xl font-semibold mb-6 text-[#f5e0a9] tracking-wide">
+    Referral Status
+  </h2>
+  <motion.div
+    whileHover={{ scale: 1.04 }}
+    className="bg-[#1c2c2e]/80 border border-[#f5e0a9]/15 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl shadow-md hover:shadow-[#f5e0a9]/20 transition-all"
+  >
+    <div>
+      <h3 className="font-semibold text-base text-[#f5e0a9]">Earn Rewards</h3>
+      <p className="mt-1 text-[#80cbc4] text-sm">
+        Invite your friends and get free access!
+      </p>
+    </div>
+    <Link to="/referral">
+      <button className="mt-2 sm:mt-0 bg-gradient-to-r from-green-400 via-teal-400 to-green-400 hover:scale-105 hover:brightness-110 text-black px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200">
+        <PlusCircle size={16} /> Refer Now
+      </button>
+    </Link>
+  </motion.div>
+</motion.section>
+
 
       {/* Profiles */}
       <motion.section
