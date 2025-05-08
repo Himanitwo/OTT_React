@@ -22,10 +22,10 @@ const trending = [
 ];
 
 const series = [
-  { title: 'Stranger Things', thumbnail: '/img/stranger.jpg' },
-  { title: 'Breaking Bad', thumbnail: '/img/breakingbad.jpg' },
-  { title: 'The Witcher', thumbnail: '/img/witcher.jpg' },
-  { title: 'Loki', thumbnail: '/img/loki.jpg' },
+  { title: 'Stranger Things', thumbnail: '/img/opp.jpg' },
+  { title: 'Breaking Bad', thumbnail: '/img/kahanni.jpeg' },
+  { title: 'The Witcher', thumbnail: '/img/grinch.jpg' },
+  { title: 'Loki', thumbnail: '/img/drstrange.jpg' },
 ];
 
 const Watchlist = () => {
