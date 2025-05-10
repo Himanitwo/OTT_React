@@ -1,7 +1,13 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Settings, HelpCircle, PlusCircle, User } from "lucide-react";
+import { Settings, HelpCircle, PlusCircle, User, LogOut } from "lucide-react"; // updated import
+
+const handleLogout = () => {
+  // Clear any auth tokens, localStorage items, etc. if needed
+  navigate("/login");
+};
+
 
 const fadeIn = {
   hidden: { opacity: 0, y: 30 },
@@ -38,19 +44,26 @@ const Dashboard = () => {
           </h1>
         </div>
         <div className="flex gap-3">
-          <button
-            onClick={handleSubscribeClick}
-            className="bg-gradient-to-r from-red-500 via-red-400 to-red-500 hover:scale-105 hover:brightness-110 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200"
-          >
-            <PlusCircle size={16} /> Subscribe
-          </button>
-          <button
-            onClick={handleSettingsClick}
-            className="bg-gradient-to-r from-yellow-300 via-yellow-200 to-yellow-300 hover:scale-105 hover:brightness-110 text-black px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200"
-          >
-            <Settings size={16} /> Settings
-          </button>
-        </div>
+  <button
+    onClick={handleSubscribeClick}
+    className="bg-gradient-to-r from-red-500 via-red-400 to-red-500 hover:scale-105 hover:brightness-110 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200"
+  >
+    <PlusCircle size={16} /> Subscribe
+  </button>
+  <button
+    onClick={handleSettingsClick}
+    className="bg-gradient-to-r from-yellow-300 via-yellow-200 to-yellow-300 hover:scale-105 hover:brightness-110 text-black px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200"
+  >
+    <Settings size={16} /> Settings
+  </button>
+  <button
+    onClick={handleLogout}
+    className="bg-gradient-to-r from-slate-600 via-slate-500 to-slate-600 hover:scale-105 hover:brightness-110 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200"
+  >
+    <LogOut size={16} /> Logout
+  </button>
+</div>
+
       </motion.header>
       {/* Referral Status */}
 <motion.section
