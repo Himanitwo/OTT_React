@@ -1,5 +1,6 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { getAuth, signOut } from "firebase/auth";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaHome,
   FaCompass,
@@ -7,31 +8,50 @@ import {
   FaSignInAlt,
   FaBell,
   FaPhone,
-  FaUser,
-  FaTachometerAlt, // For Dashboard
+  FaTachometerAlt,
+  FaSignOutAlt,
 } from "react-icons/fa";
 
-const SidebarItem = ({ to, Icon, label, isExpanded }) => {
-  return (
-    <li>
-      <Link
-        to={to}
-        className="group flex items-center space-x-4 p-2 text-white rounded-lg hover:bg-white/10 transition-colors duration-300"
-      >
-        <div className="min-w-[2rem] flex justify-center">
-          <Icon className="text-xl group-hover:text-gray-300 drop-shadow-md" />
-        </div>
-        {isExpanded && (
-          <span className="transition-opacity duration-300 whitespace-nowrap group-hover:text-gray-300 drop-shadow-md">
-            {label}
-          </span>
-        )}
-      </Link>
-    </li>
-  );
-};
+const SidebarItem = ({ to, Icon, label, isExpanded }) => (
+  <li>
+    <Link
+      to={to}
+      className="group flex items-center space-x-4 p-2 text-white rounded-lg hover:bg-white/10 transition-colors duration-300"
+    >
+      <div className="min-w-[2rem] flex justify-center">
+        <Icon className="text-xl group-hover:text-gray-300 drop-shadow-md" />
+      </div>
+      {isExpanded && (
+        <span className="transition-opacity duration-300 whitespace-nowrap group-hover:text-gray-300 drop-shadow-md">
+          {label}
+        </span>
+      )}
+    </Link>
+  </li>
+);
 
 const Sidebar = ({ isExpanded, setIsExpanded }) => {
+  const auth = getAuth();
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((u) => {
+      setUser(u);
+    });
+    return () => unsubscribe();
+  }, [auth]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      navigate("/loginpage");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
   return (
     <aside
       onMouseEnter={() => setIsExpanded(true)}
@@ -43,28 +63,60 @@ const Sidebar = ({ isExpanded, setIsExpanded }) => {
         border-r border-white/20 shadow-lg overflow-hidden`}
     >
       <div className="h-full flex flex-col px-3 pt-20 pb-4">
-        {/* Navigation */}
         <ul className="space-y-4 font-medium flex-1">
-          {/* <SidebarItem to="/dashboard" Icon={FaTachometerAlt} label="Dashboard" isExpanded={isExpanded} /> */}
           <SidebarItem to="/" Icon={FaHome} label="Homepage" isExpanded={isExpanded} />
           <SidebarItem to="/explore" Icon={FaCompass} label="Explore" isExpanded={isExpanded} />
           <SidebarItem to="/setting" Icon={FaCog} label="Settings" isExpanded={isExpanded} />
-          <SidebarItem to="/loginpage" Icon={FaSignInAlt} label="Loginpage" isExpanded={isExpanded} />
           <SidebarItem to="/subscription" Icon={FaBell} label="Subscribe" isExpanded={isExpanded} />
           <SidebarItem to="/contact" Icon={FaPhone} label="Contact us" isExpanded={isExpanded} />
+          <SidebarItem to="/vediocall" Icon={FaPhone} label="Video Call" isExpanded={isExpanded} />
+
+          {user && (
+            <>
+              {/* <SidebarItem to="/dashboard" Icon={FaTachometerAlt} label="Dashboard" isExpanded={isExpanded} /> */}
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className="group flex items-center space-x-4 p-2 text-white rounded-lg hover:bg-white/10 transition-colors duration-300 w-full text-left"
+                >
+                  <div className="min-w-[2rem] flex justify-center">
+                    <FaSignOutAlt className="text-xl group-hover:text-gray-300 drop-shadow-md" />
+                  </div>
+                  {isExpanded && (
+                    <span className="transition-opacity duration-300 whitespace-nowrap group-hover:text-gray-300 drop-shadow-md">
+                      Logout
+                    </span>
+                  )}
+                </button>
+              </li>
+            </>
+          )}
         </ul>
 
-        {/* Profile at Bottom */}
-        <div className="flex items-center space-x-3 p-2 mt-auto">
-          <Link to="/dashboard">
-          <img
-            src="https://randomuser.me/api/portraits/men/32.jpg" // Replace with your own avatar path
-            alt="Profile"
-            className="w-8 h-8 rounded-full"
-          />
-          </Link>
-          {isExpanded && <span className="text-white font-semibold">Tom Cook</span>}
-        </div>
+        {/* Profile or Login (at bottom) */}
+       <div className="p-2 mt-auto">
+  {user ? (
+    <Link
+      to="/dashboard"
+      className="flex items-center space-x-3 group hover:bg-white/10 rounded-lg p-2 transition-colors duration-300"
+    >
+      <img
+        src={user.photoURL || "https://randomuser.me/api/portraits/men/32.jpg"}
+        alt="Profile"
+        className="w-8 h-8 rounded-full"
+      />
+      {isExpanded && (
+        <span className="text-white font-semibold group-hover:text-gray-300">
+          {user.email}
+        </span>
+      )}
+    </Link>
+  ) : (
+    <SidebarItem to="/loginpage" Icon={FaSignInAlt} label="Login" isExpanded={isExpanded} />
+  )}
+</div>
+
+
       </div>
     </aside>
   );

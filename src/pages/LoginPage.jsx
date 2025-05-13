@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { auth } from "../firebase"; // Adjust path as needed
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
@@ -7,6 +9,8 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [formError, setFormError] = useState("");
+  const navigate = useNavigate();
+  const provider = new GoogleAuthProvider();
 
   const validateUsername = (value) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -22,15 +26,8 @@ const LoginPage = () => {
   };
 
   const validatePassword = (value) => {
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-
-    if (!value) {
-      setPasswordError("Password is required.");
-    } else if (!passwordRegex.test(value)) {
-      setPasswordError("Password must be at least 8 characters and contain letters and numbers.");
-    } else {
-      setPasswordError("");
-    }
+    // Add if needed
+    // const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
   };
 
   const handleUsernameChange = (e) => {
@@ -45,25 +42,35 @@ const LoginPage = () => {
     validatePassword(value);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     validateUsername(username);
     validatePassword(password);
 
-    if (
-      !username ||
-      !password ||
-      usernameError ||
-      passwordError
-    ) {
+    if (!username || !password || usernameError || passwordError) {
       setFormError("Invalid input. Please check your username and password.");
-      console.log("Validation failed");
       return;
     }
 
-    setFormError(""); // Clear any previous errors
-    console.log("Logging in with", { username, password });
-    // Proceed with login logic here
+    try {
+      const email = username.includes("@") ? username : `${username}@yourdomain.com`;
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log("Logged in:", userCredential.user);
+      setFormError("");
+      navigate("/dashboard");
+    } catch (error) {
+      setFormError("Login failed: " + error.message);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      console.log("Google login:", result.user);
+      navigate("/dashboard");
+    } catch (error) {
+      setFormError("Google login failed: " + error.message);
+    }
   };
 
   return (
@@ -78,13 +85,11 @@ const LoginPage = () => {
 
       <div className="relative z-10 bg-black/30 backdrop-blur-md p-16 rounded-2xl w-full max-w-md border border-white/20 shadow-2xl">
         <h2 className="text-3xl text-white font-bold text-center mb-4">Welcome Back</h2>
-        <p className="text-white text-center text-3xl mb-10">Login</p>
+        <p className="text-white text-3xl text-center mb-10">Login</p>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-6">
-            <label htmlFor="username" className="text-white text-xl">
-              Username or email
-            </label>
+            <label htmlFor="username" className="text-white text-xl">Username or email</label>
             <input
               id="username"
               type="text"
@@ -94,15 +99,11 @@ const LoginPage = () => {
               placeholder="Enter username or email id"
               className="w-full mt-1 p-4 rounded-full bg-transparent border border-white text-white placeholder-white focus:outline-none"
             />
-            {usernameError && (
-              <p className="text-red-400 text-sm mt-1">{usernameError}</p>
-            )}
+            {usernameError && <p className="text-red-400 text-sm mt-1">{usernameError}</p>}
           </div>
 
           <div className="mb-6">
-            <label htmlFor="password" className="text-white text-xl">
-              Password
-            </label>
+            <label htmlFor="password" className="text-white text-xl">Password</label>
             <input
               id="password"
               type="password"
@@ -112,9 +113,7 @@ const LoginPage = () => {
               placeholder="Enter password"
               className="w-full mt-1 p-4 rounded-full bg-transparent border border-white text-white placeholder-white focus:outline-none"
             />
-            {passwordError && (
-              <p className="text-red-400 text-sm mt-1">{passwordError}</p>
-            )}
+            {passwordError && <p className="text-red-400 text-sm mt-1">{passwordError}</p>}
           </div>
 
           {formError && (
@@ -137,7 +136,10 @@ const LoginPage = () => {
             </Link>
           </p>
 
-          <button className="bg-white p-2 rounded-full hover:bg-gray-300 transition">
+          <button
+            onClick={handleGoogleSignIn}
+            className="bg-white p-2 rounded-full hover:bg-gray-300 transition"
+          >
             <img
               src="https://www.svgrepo.com/show/355037/google.svg"
               alt="Google"

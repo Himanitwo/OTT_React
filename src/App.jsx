@@ -16,6 +16,9 @@ import Dashboard from "./pages/Dashboard";
 import SeriesDetailPage from "./pages/Seriesdetailpage";
 import ContactPage from "./pages/contactpage";
 import JotformAgent from "./Jotai";
+import VideoCall from "./pages/VideoCall";
+// Import the functions you need from the SDKs you need
+
 const App = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
@@ -55,6 +58,7 @@ const App = () => {
                 <Route path="/Watchhistory" element={<WatchHistory/>} />
                 <Route path="/series/:id" element={<SeriesDetailPage />} /> 
                 <Route path="/contact" element={<ContactPage />} />
+                <Route path="/vediocall" element={<VideoCall />} />
               </Routes>
             </main>
           </div>

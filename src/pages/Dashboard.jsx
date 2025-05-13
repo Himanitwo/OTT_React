@@ -1,13 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Settings, HelpCircle, PlusCircle, User, LogOut } from "lucide-react"; // updated import
-
-const handleLogout = () => {
-  // Clear any auth tokens, localStorage items, etc. if needed
-  navigate("/login");
-};
-
+import { Settings, HelpCircle, PlusCircle, User, LogOut } from "lucide-react";
 
 const fadeIn = {
   hidden: { opacity: 0, y: 30 },
@@ -24,9 +18,25 @@ const watchlistItems = [
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [userEmail, setUserEmail] = useState("User");
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user?.email) {
+      setUserEmail(user.email);
+    }
+  }, []);
 
   const handleSubscribeClick = () => navigate("/subscription");
   const handleSettingsClick = () => navigate("/setting");
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/loginpage");
+     
+  setIsLoggedIn(false);
+  window.location.href = "/loginpage";
+  };
 
   return (
     <div className="bg-gradient-to-b from-black via-[#001510] to-black min-h-screen p-6 text-gray-100 font-['Poppins']">
@@ -44,55 +54,52 @@ const Dashboard = () => {
           </h1>
         </div>
         <div className="flex gap-3">
-  <button
-    onClick={handleSubscribeClick}
-    className="bg-gradient-to-r from-red-500 via-red-400 to-red-500 hover:scale-105 hover:brightness-110 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200"
-  >
-    <PlusCircle size={16} /> Subscribe
-  </button>
-  <button
-    onClick={handleSettingsClick}
-    className="bg-gradient-to-r from-yellow-300 via-yellow-200 to-yellow-300 hover:scale-105 hover:brightness-110 text-black px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200"
-  >
-    <Settings size={16} /> Settings
-  </button>
-  <button
-    onClick={handleLogout}
-    className="bg-gradient-to-r from-slate-600 via-slate-500 to-slate-600 hover:scale-105 hover:brightness-110 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200"
-  >
-    <LogOut size={16} /> Logout
-  </button>
-</div>
-
+          <button
+            onClick={handleSubscribeClick}
+            className="bg-gradient-to-r from-red-500 via-red-400 to-red-500 hover:scale-105 hover:brightness-110 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200"
+          >
+            <PlusCircle size={16} /> Subscribe
+          </button>
+          <button
+            onClick={handleSettingsClick}
+            className="bg-gradient-to-r from-yellow-300 via-yellow-200 to-yellow-300 hover:scale-105 hover:brightness-110 text-black px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200"
+          >
+            <Settings size={16} /> Settings
+          </button>
+          {/* <button
+            onClick={handleLogout}
+            className="bg-gradient-to-r from-slate-600 via-slate-500 to-slate-600 hover:scale-105 hover:brightness-110 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200"
+          >
+            <LogOut size={16} /> Logout
+          </button> */}
+        </div>
       </motion.header>
-      {/* Referral Status */}
-<motion.section
-  className="mt-12 border-t border-[#f5e0a9]/20 pt-8"
-  variants={fadeIn}
-  initial="hidden"
-  animate="show"
->
-  <h2 className="text-2xl font-semibold mb-6 text-[#f5e0a9] tracking-wide">
-    Referral Status
-  </h2>
-  <motion.div
-    whileHover={{ scale: 1.04 }}
-    className="bg-[#1c2c2e]/80 border border-[#f5e0a9]/15 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl shadow-md hover:shadow-[#f5e0a9]/20 transition-all"
-  >
-    <div>
-      <h3 className="font-semibold text-base text-[#f5e0a9]">Earn Rewards</h3>
-      <p className="mt-1 text-[#80cbc4] text-sm">
-        Invite your friends and get free access!
-      </p>
-    </div>
-    <Link to="/referral">
-      <button className="mt-2 sm:mt-0 bg-gradient-to-r from-green-400 via-teal-400 to-green-400 hover:scale-105 hover:brightness-110 text-black px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200">
-        <PlusCircle size={16} /> Refer Now
-      </button>
-    </Link>
-  </motion.div>
-</motion.section>
 
+      {/* Referral Status */}
+      <motion.section
+        className="mt-12 border-t border-[#f5e0a9]/20 pt-8"
+        variants={fadeIn}
+        initial="hidden"
+        animate="show"
+      >
+        <h2 className="text-2xl font-semibold mb-6 text-[#f5e0a9] tracking-wide">Referral Status</h2>
+        <motion.div
+          whileHover={{ scale: 1.04 }}
+          className="bg-[#1c2c2e]/80 border border-[#f5e0a9]/15 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl shadow-md hover:shadow-[#f5e0a9]/20 transition-all"
+        >
+          <div>
+            <h3 className="font-semibold text-base text-[#f5e0a9]">Earn Rewards</h3>
+            <p className="mt-1 text-[#80cbc4] text-sm">
+              Invite your friends and get free access!
+            </p>
+          </div>
+          <Link to="/referral">
+            <button className="mt-2 sm:mt-0 bg-gradient-to-r from-green-400 via-teal-400 to-green-400 hover:scale-105 hover:brightness-110 text-black px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200">
+              <PlusCircle size={16} /> Refer Now
+            </button>
+          </Link>
+        </motion.div>
+      </motion.section>
 
       {/* Profiles */}
       <motion.section
@@ -104,7 +111,7 @@ const Dashboard = () => {
         <h2 className="text-2xl font-semibold mb-6 text-[#f5e0a9] tracking-wide">Profiles</h2>
         <div className="max-w-md mx-auto grid grid-cols-3 gap-6">
           {[
-            { name: "himani ✅", img: "https://i.imgur.com/3GvwNBf.png" },
+            { name: userEmail, img: "https://i.imgur.com/3GvwNBf.png" },
             { name: "Kids", emoji: "👶" },
             { name: "Add", icon: <PlusCircle size={32} /> },
           ].map((profile, index) => (
@@ -138,7 +145,6 @@ const Dashboard = () => {
         animate="show"
       >
         <h2 className="text-2xl font-semibold mb-6 text-[#f5e0a9] tracking-wide">Rented Movies</h2>
-
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
           {[
             {
