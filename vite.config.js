@@ -10,7 +10,20 @@ export default defineConfig({
       'X-Custom-Header': 'value',
     },
     // If you're using proxying or additional configurations that could be increasing header size, check for those.
-  }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("socket.io-client")) return "socket";
+            if (id.includes("react-router-dom")) return "react-router";
+            return "vendor";
+          }
+        },
+      },
+    },
+  },
   
 
 })

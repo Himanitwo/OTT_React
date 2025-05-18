@@ -19,6 +19,7 @@ import JotformAgent from "./Jotai";
 import VideoCall from "./pages/VideoCall";
 import VideoCallWrapper from "./pages/VideoCallWrapper";
 import JoinRoom from "./pages/joinroom";
+import VoiceChatWithText from "./pages/VideoCall";
 // Import the functions you need from the SDKs you need
 
 const App = () => {
@@ -60,9 +61,9 @@ const App = () => {
                 <Route path="/Watchhistory" element={<WatchHistory/>} />
                 <Route path="/series/:id" element={<SeriesDetailPage />} /> 
                 <Route path="/contact" element={<ContactPage />} />
-                <Route path="/vediocall" element={<VideoCall />} />
+                <Route path="/vediocall" element={<VoiceChatWithText />} />
                             <Route path="/join" element={<JoinRoom />} />
-            <Route path="/room/:roomId" element={<VideoCallWrapper />} />
+            <Route path="/room/:roomId" element={<VoiceChatWithText />} />
               </Routes>
             </main>
           </div>

@@ -1,98 +1,174 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
-import { io } from "socket.io-client";
+import { useParams, useNavigate } from "react-router-dom";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import AgoraRTC from "agora-rtc-sdk-ng";
 
-const VedioCall = () => {
-  const location = useLocation();
-  const user = location.state?.user; // user.email is required
-  const roomId = location.state?.roomId;
-  const socket = useRef(null);
-  const localStream = useRef(null);
-  const [peers, setPeers] = useState({});
-  const audioRef = useRef();
+const APP_ID = "b3a2232d3ca04acd809cf11c7940c4a4"; // Replace with your Agora App ID
+const TOKEN = null;
+
+const VoiceChatWithText = () => {
+  const { roomId } = useParams();
+  const navigate = useNavigate();
+  const client = useRef(null);
+  const localTrack = useRef(null);
+
+  const [remoteUsers, setRemoteUsers] = useState([]);
   const [isMuted, setIsMuted] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [newMsg, setNewMsg] = useState("");
+  const [user, setUser] = useState(null);
+
+  const auth = getAuth();
 
   useEffect(() => {
-    socket.current = io("http://localhost:8000");
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (!currentUser) {
+        navigate("/");
+        return;
+      }
 
-    navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then((stream) => {
-      localStream.current = stream;
-      audioRef.current.srcObject = stream;
-    });
+      setUser(currentUser);
 
-    socket.current.emit("join-room", { roomId, email: user.email });
+      client.current = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
-    socket.current.on("user-joined", ({ userId, email }) => {
-      setPeers(prev => ({
-        ...prev,
-        [userId]: { email }
-      }));
-    });
+      const joinChannel = async () => {
+        await client.current.join(APP_ID, roomId, TOKEN, currentUser.email);
 
-    socket.current.on("user-left", ({ userId }) => {
-      setPeers(prev => {
-        const updated = { ...prev };
-        delete updated[userId];
-        return updated;
-      });
+        localTrack.current = await AgoraRTC.createMicrophoneAudioTrack();
+        await client.current.publish([localTrack.current]);
+
+        // Listen for remote users joining
+        client.current.on("user-published", async (remoteUser, mediaType) => {
+          await client.current.subscribe(remoteUser, mediaType);
+          if (mediaType === "audio") remoteUser.audioTrack.play();
+          setRemoteUsers([...client.current.remoteUsers]);
+        });
+
+        client.current.on("user-unpublished", (remoteUser) => {
+          setRemoteUsers([...client.current.remoteUsers]);
+        });
+
+        client.current.on("user-left", (remoteUser) => {
+          setRemoteUsers([...client.current.remoteUsers]);
+        });
+
+        // Initialize remote users list just in case some were already there
+        setRemoteUsers([...client.current.remoteUsers]);
+      };
+
+      joinChannel();
     });
 
     return () => {
-      socket.current.disconnect();
+      if (localTrack.current) {
+        localTrack.current.stop();
+        localTrack.current.close();
+      }
+      if (client.current) client.current.leave();
+      unsubscribe();
     };
-  }, [roomId, user]);
+  }, [roomId, navigate, auth]);
 
   const toggleMute = () => {
-    if (!localStream.current) return;
-
-    localStream.current.getAudioTracks().forEach(track => {
-      track.enabled = !track.enabled;
-    });
-
-    setIsMuted(prev => !prev);
+    if (!localTrack.current) return;
+    localTrack.current.setEnabled(isMuted);
+    setIsMuted((prev) => !prev);
   };
 
-  return (
-    <div className="min-h-screen bg-neutral-900 text-white p-6">
-      <h1 className="text-xl font-semibold mb-4 flex items-center gap-2">
-        🎧 Voice Channel: {roomId}
-      </h1>
+  const sendMessage = () => {
+    if (!newMsg.trim()) return;
+    setMessages((prev) => [...prev, { from: "me", text: newMsg }]);
+    setNewMsg("");
+  };
 
-      {/* Current User */}
-      <div className="flex items-center gap-3 p-4 bg-neutral-800 rounded-lg mb-6">
-        <div className="w-10 h-10 rounded-full bg-neutral-700 flex items-center justify-center text-white text-sm uppercase">
-          {user.email?.charAt(0).toUpperCase() || "U"}
-        </div>
-        <div className="flex flex-col">
-          <span className="text-white font-medium">{user.email}</span>
-          <span className="text-xs text-neutral-400">You</span>
-        </div>
-        <button
-          onClick={toggleMute}
-          className="ml-auto bg-blue-600 hover:bg-blue-700 px-4 py-1 rounded text-sm"
-        >
-          {isMuted ? "Unmute Mic" : "Mute Mic"}
-        </button>
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-neutral-900 text-white flex items-center justify-center">
+        <p>Loading...</p>
       </div>
+    );
+  }
 
-      {/* Other Users */}
-      <div className="space-y-4">
-        {Object.entries(peers).map(([peerId, peerUser]) => (
-          <div key={peerId} className="flex items-center gap-3 p-4 bg-neutral-800 rounded-lg">
-            <div className="w-10 h-10 rounded-full bg-neutral-700 flex items-center justify-center text-white text-sm uppercase">
-              {peerUser.email?.charAt(0).toUpperCase() || "U"}
+  return (
+    <div className="min-h-screen bg-neutral-900 text-white flex p-6 gap-4">
+      <div className="w-2/3 space-y-4">
+        <h1 className="text-xl font-bold">🎧 Room: {roomId}</h1>
+
+        <div className="bg-neutral-800 rounded p-4 flex items-center justify-between">
+          <div className="flex gap-3 items-center">
+            <div className="w-10 h-10 rounded-full bg-neutral-600 flex items-center justify-center">
+              {user?.email?.[0].toUpperCase()}
             </div>
-            <div className="flex flex-col">
-              <span className="text-white font-medium">{peerUser.email}</span>
-              <span className="text-xs text-neutral-400">Connected</span>
+            <div>
+              <p>{user.email}</p>
+              <p className="text-xs text-neutral-400">You</p>
             </div>
           </div>
-        ))}
+          <button
+            onClick={toggleMute}
+            className="bg-blue-600 px-4 py-1 rounded"
+          >
+            {isMuted ? "Unmute" : "Mute"}
+          </button>
+        </div>
+
+        <div>
+          <h2 className="font-semibold text-lg mb-2">Others in Call</h2>
+          <div className="space-y-2">
+            {remoteUsers.length === 0 ? (
+              <p className="text-sm text-neutral-400">
+                No other users connected yet.
+              </p>
+            ) : (
+              remoteUsers.map((u) => (
+                <div
+                  key={u.uid}
+                  className="bg-neutral-800 rounded p-3 flex items-center gap-3"
+                >
+                  <div className="w-10 h-10 rounded-full bg-neutral-600 flex items-center justify-center">
+                    {String(u.uid)[0].toUpperCase()}
+                  </div>
+                  <p>{u.uid}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
 
-      <audio ref={audioRef} autoPlay muted />
+      <div className="w-1/3 flex flex-col bg-neutral-800 rounded p-4">
+        <h2 className="font-semibold text-lg mb-2">💬 Chat</h2>
+        <div className="flex-1 overflow-y-auto space-y-2 mb-4">
+          {messages.map((msg, idx) => (
+            <div
+              key={idx}
+              className={`p-2 rounded ${
+                msg.from === "me"
+                  ? "bg-blue-700 text-right"
+                  : "bg-neutral-700"
+              }`}
+            >
+              {msg.text}
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <input
+            value={newMsg}
+            onChange={(e) => setNewMsg(e.target.value)}
+            className="flex-1 p-2 bg-neutral-900 text-white rounded"
+            placeholder="Type a message"
+          />
+          <button
+            onClick={sendMessage}
+            className="bg-green-600 px-3 py-1 rounded"
+          >
+            Send
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default VedioCall;
+export default VoiceChatWithText;

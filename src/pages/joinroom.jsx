@@ -13,12 +13,13 @@ function JoinRoom() {
 
   return (
     <div style={{ padding: 20 }}>
-      <h2>Join a Room</h2>
+      <h2>Join a Voice Room</h2>
       <input
         type="text"
         placeholder="Enter Room ID"
         value={roomId}
         onChange={(e) => setRoomId(e.target.value)}
+        style={{ display: 'block', marginBottom: 10 }}
       />
       <button onClick={handleJoin}>Join</button>
     </div>
