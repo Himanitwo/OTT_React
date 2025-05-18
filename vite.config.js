@@ -10,5 +10,7 @@ export default defineConfig({
       'X-Custom-Header': 'value',
     },
     // If you're using proxying or additional configurations that could be increasing header size, check for those.
-  },
+  }
+  
+
 })

@@ -10,6 +10,7 @@ import {
   FaPhone,
   FaTachometerAlt,
   FaSignOutAlt,
+  FaFacebookMessenger,
 } from "react-icons/fa";
 
 const SidebarItem = ({ to, Icon, label, isExpanded }) => (
@@ -69,7 +70,7 @@ const Sidebar = ({ isExpanded, setIsExpanded }) => {
           <SidebarItem to="/setting" Icon={FaCog} label="Settings" isExpanded={isExpanded} />
           <SidebarItem to="/subscription" Icon={FaBell} label="Subscribe" isExpanded={isExpanded} />
           <SidebarItem to="/contact" Icon={FaPhone} label="Contact us" isExpanded={isExpanded} />
-          <SidebarItem to="/vediocall" Icon={FaPhone} label="Video Call" isExpanded={isExpanded} />
+          <SidebarItem to="/join" Icon={FaFacebookMessenger} label="Video Call" isExpanded={isExpanded} />
 
           {user && (
             <>

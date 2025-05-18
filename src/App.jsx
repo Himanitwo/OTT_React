@@ -17,6 +17,8 @@ import SeriesDetailPage from "./pages/Seriesdetailpage";
 import ContactPage from "./pages/contactpage";
 import JotformAgent from "./Jotai";
 import VideoCall from "./pages/VideoCall";
+import VideoCallWrapper from "./pages/VideoCallWrapper";
+import JoinRoom from "./pages/joinroom";
 // Import the functions you need from the SDKs you need
 
 const App = () => {
@@ -59,6 +61,8 @@ const App = () => {
                 <Route path="/series/:id" element={<SeriesDetailPage />} /> 
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/vediocall" element={<VideoCall />} />
+                            <Route path="/join" element={<JoinRoom />} />
+            <Route path="/room/:roomId" element={<VideoCallWrapper />} />
               </Routes>
             </main>
           </div>
