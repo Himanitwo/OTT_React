@@ -3,8 +3,7 @@ import MovieSection from './MovieSection';
 import GenreSection from './GenreSection';
 import SeriesSection from './SeriesSection';
 import { newReleases, recommendations, popularMovies, seriesList } from '../../data';
- // TWO dots here 
-// import the data
+
 
 // import '../../App.css'; // import the global styles
 
