@@ -18,6 +18,8 @@ import ContactPage from "./pages/contactpage";
 import JotformAgent from "./Jotai";
 import VideoCall from "./pages/VideoCall";
 // Import the functions you need from the SDKs you need
+import BadgeDashboard from "./pages/badges/BadgeDashboard";
+
 
 const App = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
@@ -59,6 +61,8 @@ const App = () => {
                 <Route path="/series/:id" element={<SeriesDetailPage />} /> 
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/vediocall" element={<VideoCall />} />
+                <Route path="/badges" element={<BadgeDashboard />} />
+                {/* Add more routes as needed */}
               </Routes>
             </main>
           </div>
