@@ -69,7 +69,7 @@ const App = () => {
           </div>
         </div>
       </Router>
-      <JotformAgent />
+      {/* <JotformAgent /> */}
     </>
   );
 };

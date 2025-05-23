@@ -1,85 +1,109 @@
-const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-const cors = require('cors');
+const express = require("express");
+const http = require("http");
+const socketIO = require("socket.io");
+const mongoose = require("mongoose");
+const cors = require("cors");
+// require("dotenv").config(); // Load env variables
 
+// Setup Express and HTTP server
 const app = express();
 const server = http.createServer(app);
-
 app.use(cors());
 
-const io = new Server(server, {
+// Setup Socket.io
+const io = socketIO(server, {
   cors: {
-    origin: '*',
-    methods: ['GET', 'POST'],
+    origin: "*",
+    methods: ["GET", "POST"],
   },
 });
 
-const rooms = {}; // { roomId: { socketId: email } }
+// Connect to MongoDB securely
+const mongoUri = `mongodb+srv://altpsychward:rCKi9B19te5MlxNA@ott-messaging.912dwbk.mongodb.net/?retryWrites=true&w=majority&appName=ott-messaging`;
 
-io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+mongoose
+  .connect(mongoUri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-  socket.on('join-room', ({ roomId, email }) => {
+// Define Mongoose schema
+const messageSchema = new mongoose.Schema({
+  roomId: String,
+  from: String,
+  text: String,
+  timestamp: { type: Date, default: Date.now },
+});
+
+const Message = mongoose.model("Message", messageSchema);
+
+// Temporary test route to manually insert a test message
+app.get("/test-message", async (req, res) => {
+  try {
+    const testMsg = new Message({
+      roomId: "testRoom",
+      from: "tester@example.com",
+      text: "This is a test message",
+    });
+    await testMsg.save();
+    console.log("✅ Test message saved");
+    res.send("✅ Test message saved to MongoDB");
+  } catch (error) {
+    console.error("❌ Error saving test message:", error);
+    res.status(500).send("Error saving message");
+  }
+});
+
+// Socket.io logic
+io.on("connection", (socket) => {
+  console.log("🔌 User connected:", socket.id);
+
+  socket.on("joinRoom", async ({ roomId, email }) => {
     socket.join(roomId);
-    socket.email = email;
-    socket.roomId = roomId;
+    socket.to(roomId).emit("user-joined", { id: socket.id, email });
+    console.log(`👤 ${email} joined room: ${roomId}`);
 
-    if (!rooms[roomId]) rooms[roomId] = {};
-    rooms[roomId][socket.id] = email;
-
-    // Notify others in the room
-    socket.to(roomId).emit('user-joined', { userId: socket.id, email });
-
-    // Send updated user list to all in room
-    io.in(roomId).emit('user-list', Object.entries(rooms[roomId]).map(([id, email]) => ({
-      userId: id,
-      email,
-    })));
+    const history = await Message.find({ roomId }).sort({ timestamp: 1 }).limit(100);
+    socket.emit("chatHistory", history);
   });
 
-  socket.on('offer', ({ targetId, offer }) => {
-    io.to(targetId).emit('offer', { from: socket.id, offer });
-  });
+  socket.on("sendMessage", async ({ roomId, message, from }) => {
+    try {
+      const newMsg = new Message({ roomId, from, text: message });
+      await newMsg.save();
+      console.log("💾 Message saved:", newMsg);
 
-  socket.on('answer', ({ targetId, answer }) => {
-    io.to(targetId).emit('answer', { from: socket.id, answer });
-  });
-
-  socket.on('ice-candidate', ({ targetId, candidate }) => {
-    io.to(targetId).emit('ice-candidate', { from: socket.id, candidate });
-  });
-
-  socket.on('chat-message', ({ sender, message }) => {
-    for (const roomId of socket.rooms) {
-      if (roomId !== socket.id) {
-        io.to(roomId).emit('chat-message', { sender, message });
-      }
+      io.to(roomId).emit("receiveMessage", {
+        text: message,
+        from,
+        timestamp: newMsg.timestamp,
+      });
+    } catch (error) {
+      console.error("❌ Error saving message:", error);
     }
   });
 
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+  // WebRTC signaling
+  socket.on("offer", ({ roomId, offer, to }) => {
+    socket.to(to).emit("offer", { offer, from: socket.id });
+  });
 
-    for (const roomId in rooms) {
-      if (rooms[roomId][socket.id]) {
-        delete rooms[roomId][socket.id];
-        socket.to(roomId).emit('user-disconnected', { userId: socket.id });
+  socket.on("answer", ({ answer, to }) => {
+    socket.to(to).emit("answer", { answer, from: socket.id });
+  });
 
-        io.in(roomId).emit('user-list', Object.entries(rooms[roomId]).map(([id, email]) => ({
-          userId: id,
-          email,
-        })));
+  socket.on("ice-candidate", ({ candidate, to }) => {
+    socket.to(to).emit("ice-candidate", { candidate, from: socket.id });
+  });
 
-        if (Object.keys(rooms[roomId]).length === 0) {
-          delete rooms[roomId];
-        }
-      }
-    }
+  socket.on("disconnect", () => {
+    console.log("❌ User disconnected:", socket.id);
   });
 });
 
-const PORT = 3001;
-server.listen(PORT, () => {
-  console.log(`Server listening on http://localhost:${PORT}`);
+// Start server
+server.listen(4000, () => {
+  console.log("🚀 Server running on http://localhost:4000");
 });
