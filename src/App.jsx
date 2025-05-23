@@ -21,6 +21,8 @@ import VideoCallWrapper from "./pages/VideoCallWrapper";
 import JoinRoom from "./pages/joinroom";
 import VoiceChatWithText from "./pages/VideoCall";
 // Import the functions you need from the SDKs you need
+import BadgeDashboard from "./pages/badges/BadgeDashboard";
+
 
 const App = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
@@ -64,6 +66,9 @@ const App = () => {
                 <Route path="/vediocall" element={<VoiceChatWithText />} />
                             <Route path="/join" element={<JoinRoom />} />
             <Route path="/room/:roomId" element={<VoiceChatWithText />} />
+                <Route path="/vediocall" element={<VideoCall />} />
+                <Route path="/badges" element={<BadgeDashboard />} />
+                {/* Add more routes as needed */}
               </Routes>
             </main>
           </div>
