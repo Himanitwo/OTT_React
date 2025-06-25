@@ -26,24 +26,28 @@ import WatchPartyRoom from "./pages/WatchParty/WatchPartyRoom";
 import LiveStream from "./pages/LiveStream";
 import Viewer from "./pages/veiwer";
 import StartLive from "./pages/StartLive";
-import LiveLobby from "./pages/LiveLobby";
+import LiveLobby from "./pages/LiveLobby";// Corrected: Import ThemeProvider from its path
+import { ThemeProvider } from "./pages/useTheme"; // 
+
 const App = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
   return (
     <>
-      <Router>
-        <div className="flex flex-col h-screen">
-          {/* Navbar at top */}
-          <Navbar />
+      {/* ThemeProvider must wrap the content that uses the theme, typically the entire app */}
+      <ThemeProvider>
+        <Router>
+          <div className="flex flex-col h-screen">
+            {/* Navbar at top */}
+            <Navbar />
 
-          {/* Flex container for sidebar + main content */}
-          <div className="flex flex-1">
-            {/* Sidebar */}
-            <Sidebar
-              isExpanded={isSidebarExpanded}
-              setIsExpanded={setIsSidebarExpanded}
-            />
+            {/* Flex container for sidebar + main content */}
+            <div className="flex flex-1">
+              {/* Sidebar */}
+              <Sidebar
+                isExpanded={isSidebarExpanded}
+                setIsExpanded={setIsSidebarExpanded}
+              />
 
             {/* Main content */}
             <main
@@ -83,6 +87,7 @@ const App = () => {
         </div>
       </Router>
       {/* <JotformAgent /> */}
+      </ThemeProvider>
     </>
   );
 };
