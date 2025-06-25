@@ -30,10 +30,15 @@ export const themes = {
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const [themeKey, setThemeKey] = useState("dark");
+  const savedTheme = localStorage.getItem("theme") || "dark";
+  const [themeKey, setThemeKey] = useState(savedTheme);
+
 
   const setTheme = (key) => {
-    if (themes[key]) setThemeKey(key);
+    if (themes[key]) {
+    setThemeKey(key);
+    localStorage.setItem("theme", key); // ✅ Save to localStorage
+  }
   };
 
   useEffect(() => {

@@ -6,9 +6,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(),tailwindcss(),],
   server: {
-    headers: {
-      'X-Custom-Header': 'value',
-    },
+     host: "127.0.0.1",
     // If you're using proxying or additional configurations that could be increasing header size, check for those.
   },
   build: {
