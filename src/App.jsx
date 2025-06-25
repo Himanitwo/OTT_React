@@ -22,8 +22,11 @@ import JoinRoom from "./pages/joinroom";
 import VoiceChatWithText from "./pages/VideoCall";
 // Import the functions you need from the SDKs you need
 import BadgeDashboard from "./pages/badges/BadgeDashboard";
-
-
+import WatchPartyRoom from "./pages/WatchParty/WatchPartyRoom";
+import LiveStream from "./pages/LiveStream";
+import Viewer from "./pages/veiwer";
+import StartLive from "./pages/StartLive";
+import LiveLobby from "./pages/LiveLobby";
 const App = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
@@ -68,7 +71,12 @@ const App = () => {
             <Route path="/room/:roomId" element={<VoiceChatWithText />} />
                 <Route path="/vediocall" element={<VideoCall />} />
                 <Route path="/badges" element={<BadgeDashboard />} />
-                {/* Add more routes as needed */}
+                <Route path="/watch-party/:roomId" element={<WatchPartyRoom />} />
+                        <Route path="/live/host/:roomId" element={<LiveStream />} />
+        <Route path="/live/view/:roomId" element={<Viewer />} />
+
+                 <Route path="/start-live" element={<StartLive />} />
+        <Route path="/live" element={<LiveLobby />} />
               </Routes>
             </main>
           </div>
