@@ -12,99 +12,115 @@ const Viewer = () => {
   const [status, setStatus] = useState("connecting");
   const [error, setError] = useState(null);
   const [streamInfo, setStreamInfo] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  const handleError = (err) => {
+    console.error(err);
+    setError(err.message || "An error occurred");
+    setStatus("error");
+  };
+
+  const setupWebRTC = async (offer, from) => {
+    try {
+      setStatus("setting_up_stream");
+      
+      const peer = new RTCPeerConnection({
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:global.stun.twilio.com:3478" }
+        ]
+      });
+      peerRef.current = peer;
+
+      peer.ontrack = (event) => {
+        if (event.streams && event.streams[0]) {
+          videoRef.current.srcObject = event.streams[0];
+          setStatus("watching");
+        }
+      };
+
+      peer.oniceconnectionstatechange = () => {
+        console.log("ICE connection state:", peer.iceConnectionState);
+        if (peer.iceConnectionState === "disconnected") {
+          setStatus("disconnected");
+        }
+      };
+
+      peer.onconnectionstatechange = () => {
+        console.log("Connection state:", peer.connectionState);
+      };
+
+      await peer.setRemoteDescription(new RTCSessionDescription(offer));
+      const answer = await peer.createAnswer();
+      await peer.setLocalDescription(answer);
+
+      socketRef.current.emit("answer", { answer, to: from });
+
+      peer.onicecandidate = (event) => {
+        if (event.candidate) {
+          socketRef.current.emit("ice-candidate", { 
+            candidate: event.candidate, 
+            to: from 
+          });
+        }
+      };
+    } catch (err) {
+      handleError(err);
+    }
+  };
 
   useEffect(() => {
-    // Initialize WebSocket connection
-    socketRef.current = io("http://localhost:4000", {
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-    });
+    const initializeConnection = () => {
+      socketRef.current = io(process.env.REACT_APP_SIGNALING_SERVER || "http://localhost:4001", {
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+      });
 
-    // Connection events
-    socketRef.current.on("connect", () => {
-      console.log("Connected to signaling server");
-      setStatus("joining");
-      socketRef.current.emit("joinLiveStream", { roomId, email: "viewer" });
-    });
+      socketRef.current.on("connect", () => {
+        console.log("Connected to signaling server");
+        setStatus("joining");
+        socketRef.current.emit("joinLiveStream", { roomId, email: "viewer" });
+        setRetryCount(0); // Reset retry count on successful connection
+      });
 
-    socketRef.current.on("connect_error", (err) => {
-      console.error("Connection error:", err);
-      setError("Failed to connect to server");
-      setStatus("error");
-    });
-
-    // Stream events
-    socketRef.current.on("offer", async ({ offer, from }) => {
-      try {
-        setStatus("setting_up_stream");
-        
-        const peer = new RTCPeerConnection({
-          iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
-            { urls: "stun:global.stun.twilio.com:3478" }
-          ]
-        });
-        peerRef.current = peer;
-
-        peer.ontrack = (event) => {
-          if (event.streams && event.streams[0]) {
-            videoRef.current.srcObject = event.streams[0];
-            setStatus("watching");
-          }
-        };
-
-        peer.oniceconnectionstatechange = () => {
-          if (peer.iceConnectionState === "disconnected") {
-            setStatus("disconnected");
-          }
-        };
-
-        await peer.setRemoteDescription(new RTCSessionDescription(offer));
-        const answer = await peer.createAnswer();
-        await peer.setLocalDescription(answer);
-
-        socketRef.current.emit("answer", { answer, to: from });
-
-        peer.onicecandidate = (event) => {
-          if (event.candidate) {
-            socketRef.current.emit("ice-candidate", { 
-              candidate: event.candidate, 
-              to: from 
-            });
-          }
-        };
-      } catch (err) {
-        console.error("WebRTC setup error:", err);
-        setError("Failed to setup video stream");
+      socketRef.current.on("connect_error", (err) => {
+        console.error("Connection error:", err);
+        setError("Failed to connect to server");
         setStatus("error");
-      }
-    });
+        setRetryCount(prev => prev + 1);
+      });
 
-    socketRef.current.on("ice-candidate", async ({ candidate }) => {
-      try {
-        if (peerRef.current && candidate) {
-          await peerRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+      socketRef.current.on("offer", async ({ offer, from }) => {
+        await setupWebRTC(offer, from);
+      });
+
+      socketRef.current.on("ice-candidate", async ({ candidate }) => {
+        try {
+          if (peerRef.current && candidate) {
+            await peerRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+          }
+        } catch (err) {
+          console.error("ICE candidate error:", err);
         }
-      } catch (err) {
-        console.error("ICE candidate error:", err);
-      }
-    });
+      });
 
-    socketRef.current.on("streamNotFound", () => {
-      setError("Stream not found or has ended");
-      setStatus("error");
-    });
+      socketRef.current.on("streamNotFound", () => {
+        setError("Stream not found or has ended");
+        setStatus("error");
+      });
 
-    socketRef.current.on("liveEnded", () => {
-      setError("The stream has ended");
-      setStatus("ended");
-    });
+      socketRef.current.on("liveEnded", () => {
+        setError("The stream has ended");
+        setStatus("ended");
+      });
 
-    socketRef.current.on("streamInfo", (info) => {
-      setStreamInfo(info);
-    });
+      socketRef.current.on("streamInfo", (info) => {
+        setStreamInfo(info);
+      });
+    };
 
-    // Cleanup function
+    initializeConnection();
+
     return () => {
       if (peerRef.current) {
         peerRef.current.close();
@@ -113,7 +129,7 @@ const Viewer = () => {
         socketRef.current.disconnect();
       }
     };
-  }, [roomId]);
+  }, [roomId, retryCount]);
 
   const statusMessages = {
     connecting: "Connecting to server...",
@@ -165,6 +181,11 @@ const Viewer = () => {
               className={`w-full rounded-lg shadow-xl ${
                 status !== "watching" ? "hidden" : ""
               }`}
+              onError={(e) => {
+                if (e.target.error && e.target.error.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) {
+                  setError("Please allow autoplay for this site");
+                }
+              }}
             />
             
             {status !== "watching" && (

@@ -28,7 +28,7 @@ const StartLive = () => {
         
         // 2. Connect to WebSocket
         setStatus("connecting_server");
-        socketRef.current = io("http://localhost:4000");
+        socketRef.current = io("http://localhost:4001");
         
         socketRef.current.on("connect", () => {
           setStatus("creating_room");
