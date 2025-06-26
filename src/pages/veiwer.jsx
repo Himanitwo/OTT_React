@@ -1,57 +1,197 @@
-import React, { useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
-
-const socket = io("http://localhost:4000");
 
 const Viewer = () => {
   const { roomId } = useParams();
+  const navigate = useNavigate();
   const videoRef = useRef(null);
   const peerRef = useRef(null);
+  const socketRef = useRef(null);
+  
+  const [status, setStatus] = useState("connecting");
+  const [error, setError] = useState(null);
+  const [streamInfo, setStreamInfo] = useState(null);
 
   useEffect(() => {
-    socket.connect();
-    socket.emit("joinRoom", { roomId, email: "viewer" });
-
-    socket.on("offer", async ({ offer, from }) => {
-      const peer = new RTCPeerConnection();
-      peerRef.current = peer;
-
-      peer.ontrack = (event) => {
-        videoRef.current.srcObject = event.streams[0];
-      };
-
-      await peer.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = await peer.createAnswer();
-      await peer.setLocalDescription(answer);
-
-      socket.emit("answer", { answer, to: from });
-
-      peer.onicecandidate = (event) => {
-        if (event.candidate) {
-          socket.emit("ice-candidate", { candidate: event.candidate, to: from });
-        }
-      };
+    // Initialize WebSocket connection
+    socketRef.current = io("http://localhost:4000", {
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
 
-    socket.on("ice-candidate", async ({ candidate }) => {
+    // Connection events
+    socketRef.current.on("connect", () => {
+      console.log("Connected to signaling server");
+      setStatus("joining");
+      socketRef.current.emit("joinLiveStream", { roomId, email: "viewer" });
+    });
+
+    socketRef.current.on("connect_error", (err) => {
+      console.error("Connection error:", err);
+      setError("Failed to connect to server");
+      setStatus("error");
+    });
+
+    // Stream events
+    socketRef.current.on("offer", async ({ offer, from }) => {
       try {
-        await peerRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+        setStatus("setting_up_stream");
+        
+        const peer = new RTCPeerConnection({
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:global.stun.twilio.com:3478" }
+          ]
+        });
+        peerRef.current = peer;
+
+        peer.ontrack = (event) => {
+          if (event.streams && event.streams[0]) {
+            videoRef.current.srcObject = event.streams[0];
+            setStatus("watching");
+          }
+        };
+
+        peer.oniceconnectionstatechange = () => {
+          if (peer.iceConnectionState === "disconnected") {
+            setStatus("disconnected");
+          }
+        };
+
+        await peer.setRemoteDescription(new RTCSessionDescription(offer));
+        const answer = await peer.createAnswer();
+        await peer.setLocalDescription(answer);
+
+        socketRef.current.emit("answer", { answer, to: from });
+
+        peer.onicecandidate = (event) => {
+          if (event.candidate) {
+            socketRef.current.emit("ice-candidate", { 
+              candidate: event.candidate, 
+              to: from 
+            });
+          }
+        };
       } catch (err) {
-        console.error("ICE error:", err);
+        console.error("WebRTC setup error:", err);
+        setError("Failed to setup video stream");
+        setStatus("error");
       }
     });
 
+    socketRef.current.on("ice-candidate", async ({ candidate }) => {
+      try {
+        if (peerRef.current && candidate) {
+          await peerRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+      } catch (err) {
+        console.error("ICE candidate error:", err);
+      }
+    });
+
+    socketRef.current.on("streamNotFound", () => {
+      setError("Stream not found or has ended");
+      setStatus("error");
+    });
+
+    socketRef.current.on("liveEnded", () => {
+      setError("The stream has ended");
+      setStatus("ended");
+    });
+
+    socketRef.current.on("streamInfo", (info) => {
+      setStreamInfo(info);
+    });
+
+    // Cleanup function
     return () => {
-      socket.disconnect();
-      socket.off();
+      if (peerRef.current) {
+        peerRef.current.close();
+      }
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
     };
   }, [roomId]);
 
+  const statusMessages = {
+    connecting: "Connecting to server...",
+    joining: "Joining stream...",
+    setting_up_stream: "Setting up video connection...",
+    watching: "Stream is live",
+    disconnected: "Connection lost - trying to reconnect",
+    error: "Error occurred",
+    ended: "Stream has ended"
+  };
+
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
-      <h1 className="text-xl font-bold mb-4">🔴 Watching Stream</h1>
-      <video ref={videoRef} autoPlay playsInline className="w-full max-w-2xl rounded shadow" />
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-4">
+      <div className="w-full max-w-4xl">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-xl font-bold flex items-center">
+            {status === "watching" ? (
+              <span className="text-red-500 mr-2">●</span>
+            ) : (
+              <span className="text-gray-500 mr-2">○</span>
+            )}
+            {streamInfo?.title || `Stream ${roomId}`}
+          </h1>
+          <button 
+            onClick={() => navigate("/")}
+            className="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded"
+          >
+            Leave
+          </button>
+        </div>
+
+        {error ? (
+          <div className="bg-red-900/50 p-6 rounded-lg text-center">
+            <p className="text-lg mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : (
+          <>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className={`w-full rounded-lg shadow-xl ${
+                status !== "watching" ? "hidden" : ""
+              }`}
+            />
+            
+            {status !== "watching" && (
+              <div className="aspect-video bg-gray-800 rounded-lg flex flex-col items-center justify-center">
+                <div className="text-4xl mb-4">
+                  {status === "ended" ? "⏹️" : "⏳"}
+                </div>
+                <p className="text-xl">{statusMessages[status]}</p>
+                {status === "disconnected" && (
+                  <div className="mt-2 h-1 w-32 bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 animate-pulse"></div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="mt-4 text-sm text-gray-400">
+              <p>Status: {statusMessages[status]}</p>
+              {streamInfo && (
+                <p>Host: {streamInfo.email} • Started: {
+                  new Date(streamInfo.startedAt).toLocaleString()
+                }</p>
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };
