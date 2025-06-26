@@ -22,8 +22,11 @@ import JoinRoom from "./pages/joinroom";
 import VoiceChatWithText from "./pages/VideoCall";
 // Import the functions you need from the SDKs you need
 import BadgeDashboard from "./pages/badges/BadgeDashboard";
-
-// Corrected: Import ThemeProvider from its path
+import WatchPartyRoom from "./pages/WatchParty/WatchPartyRoom";
+import LiveStream from "./pages/LiveStream";
+import Viewer from "./pages/veiwer";
+import StartLive from "./pages/StartLive";
+import LiveLobby from "./pages/LiveLobby";// Corrected: Import ThemeProvider from its path
 import { ThemeProvider } from "./pages/useTheme"; // 
 
 const App = () => {
@@ -46,36 +49,45 @@ const App = () => {
                 setIsExpanded={setIsSidebarExpanded}
               />
 
-              {/* Main content */}
-              <main
-                className="transition-all duration-300 flex-1 ml-16 pt-0"
-              >
-                <Routes>
-                  <Route path="/" element={<Homepage />} />
-                  <Route path="/explore" element={<Explore />} />
-                  <Route path="/setting" element={<SettingsPage />} />
-                  <Route path="/loginpage" element={<LoginPage />} />
-                  <Route path="/movie/:id" element={<MovieDetailPage />} /> {/* Dynamic route for movie details */}
-                  <Route path="/watch/:id" element={<WatchPage />} />
-                  <Route path="/subscription" element={<SubscriptionPage />} />
-                  <Route path="/watchlist" element={<WatchlistPage />} />
-                  <Route path="/signup" element={<FelciSignup />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/Watchhistory" element={<WatchHistory />} />
-                  <Route path="/series/:id" element={<SeriesDetailPage />} />
-                  <Route path="/contact" element={<ContactPage />} />
-                  <Route path="/vediocall" element={<VoiceChatWithText />} />
-                  <Route path="/join" element={<JoinRoom />} />
-                  <Route path="/room/:roomId" element={<VoiceChatWithText />} />
-                  <Route path="/badges" element={<BadgeDashboard />} />
-                  {/* Add more routes as needed */}
-                </Routes>
-              </main>
-            </div>
+            {/* Main content */}
+            <main
+              // className={`transition-all duration-300 flex-1 pt-16 ${
+              //   isSidebarExpanded ? "ml-64" : "ml-16"
+              // }`}
+              className={`transition-all duration-300 flex-1 ml-16 pt-0 }`}
+            >
+              <Routes>
+                <Route path="/" element={<Homepage />} />
+                <Route path="/explore" element={<Explore />} />
+                <Route path="/setting" element={<SettingsPage />} />
+                <Route path="/loginpage" element={<LoginPage />} />
+                <Route path="/movie/:id" element={<MovieDetailPage />} /> {/* Dynamic route for movie details */}
+                <Route path="/watch/:id" element={<WatchPage />}/>
+                <Route path="/subscription" element={<SubscriptionPage />}/>
+                <Route path="/watchlist" element={<WatchlistPage />}/>
+                <Route path="/signup" element={<FelciSignup />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/Watchhistory" element={<WatchHistory/>} />
+                <Route path="/series/:id" element={<SeriesDetailPage />} /> 
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/vediocall" element={<VoiceChatWithText />} />
+                            <Route path="/join" element={<JoinRoom />} />
+            <Route path="/room/:roomId" element={<VoiceChatWithText />} />
+                <Route path="/vediocall" element={<VideoCall />} />
+                <Route path="/badges" element={<BadgeDashboard />} />
+                <Route path="/watch-party/:roomId" element={<WatchPartyRoom />} />
+                        <Route path="/live/host/:roomId" element={<LiveStream />} />
+        <Route path="/live/view/:roomId" element={<Viewer />} />
+
+                 <Route path="/start-live" element={<StartLive />} />
+        <Route path="/live" element={<LiveLobby />} />
+              </Routes>
+            </main>
           </div>
-        </Router>
-      </ThemeProvider>
+        </div>
+      </Router>
       {/* <JotformAgent /> */}
+      </ThemeProvider>
     </>
   );
 };

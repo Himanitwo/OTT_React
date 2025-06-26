@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "../firebase"; // Adjust path as needed
 
+
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [usernameError, setUsernameError] = useState("");
@@ -11,6 +12,25 @@ const LoginPage = () => {
   const [formError, setFormError] = useState("");
   const navigate = useNavigate();
   const provider = new GoogleAuthProvider();
+  const syncUserToBackend = async (token) => {
+  try {
+    const res = await fetch("http://localhost:4000/api/profile/syncUser", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token }), // sending token in the body
+    });
+
+    const data = await res.json();
+    console.log("✅ Synced user:", data.user || data.message);
+  } catch (err) {
+    console.error("❌ Failed to sync user:", err);
+  }
+};
+
+
+
 
   const validateUsername = (value) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -46,6 +66,8 @@ const LoginPage = () => {
     e.preventDefault();
     validateUsername(username);
     validatePassword(password);
+    
+    navigate("/dashboard");
 
     if (!username || !password || usernameError || passwordError) {
       setFormError("Invalid input. Please check your username and password.");
@@ -55,6 +77,14 @@ const LoginPage = () => {
     try {
       const email = username.includes("@") ? username : `${username}@yourdomain.com`;
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      const token = await user.getIdToken();
+
+    // ✅ Sync with backend
+    await syncUserToBackend(token);
+
+    setFormError("");
+    navigate("/dashboard");
       console.log("Logged in:", userCredential.user);
       setFormError("");
       navigate("/dashboard");
@@ -67,6 +97,10 @@ const LoginPage = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       console.log("Google login:", result.user);
+      const token = await result.user.getIdToken();
+      await syncUserToBackend(token);
+
+      await syncUserToBackend(token);
       navigate("/dashboard");
     } catch (error) {
       setFormError("Google login failed: " + error.message);
