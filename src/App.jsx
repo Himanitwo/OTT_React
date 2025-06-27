@@ -28,7 +28,8 @@ import Viewer from "./pages/veiwer";
 import StartLive from "./pages/StartLive";
 import LiveLobby from "./pages/LiveLobby";// Corrected: Import ThemeProvider from its path
 import { ThemeProvider } from "./pages/useTheme"; // 
-
+import SeriesPage from "./pages/seriespage";
+import MoviePage from "./pages/moviep";// Import the MoviePage component
 const App = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
@@ -61,7 +62,7 @@ const App = () => {
                 <Route path="/explore" element={<Explore />} />
                 <Route path="/setting" element={<SettingsPage />} />
                 <Route path="/loginpage" element={<LoginPage />} />
-                <Route path="/movie/:id" element={<MovieDetailPage />} /> {/* Dynamic route for movie details */}
+                {/* <Route path="/movie/:id" element={<MovieDetailPage />} /> Dynamic route for movie details */}
                 <Route path="/watch/:id" element={<WatchPage />}/>
                 <Route path="/subscription" element={<SubscriptionPage />}/>
                 <Route path="/watchlist" element={<WatchlistPage />}/>
@@ -78,7 +79,8 @@ const App = () => {
                 <Route path="/watch-party/:roomId" element={<WatchPartyRoom />} />
                         <Route path="/live/host/:roomId" element={<LiveStream />} />
         <Route path="/live/view/:roomId" element={<Viewer />} />
-
+  <Route path="/series/waris" element={<SeriesPage />} />
+  <Route path="/movie/:movieId" element={<MoviePage />} />
                  <Route path="/start-live" element={<StartLive />} />
         <Route path="/live" element={<LiveLobby />} />
               </Routes>
