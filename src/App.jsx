@@ -7,6 +7,7 @@ import Homepage from "./pages/Homepage/Homepage";
 import Explore from "./pages/Explore/Explore"; // Uppercase
 import SubscriptionPage from "./pages/subscription";
 import LoginPage from "./pages/LoginPage";
+import EventsPage from ".pages/Events/EventsPage";
 import WatchPage from "./pages/watchnow";
 import FelciSignup from "./pages/felsignup"; // SignUp page
 import SettingsPage from "./pages/Settings/SettingsPage";
@@ -61,6 +62,7 @@ const App = () => {
                 <Route path="/explore" element={<Explore />} />
                 <Route path="/setting" element={<SettingsPage />} />
                 <Route path="/loginpage" element={<LoginPage />} />
+                <Route path="/events" element={<EventsPage />} />
                 <Route path="/movie/:id" element={<MovieDetailPage />} /> {/* Dynamic route for movie details */}
                 <Route path="/watch/:id" element={<WatchPage />}/>
                 <Route path="/subscription" element={<SubscriptionPage />}/>

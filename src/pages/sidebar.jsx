@@ -71,6 +71,7 @@ const Sidebar = ({ isExpanded, setIsExpanded }) => {
           <SidebarItem to="/subscription" Icon={FaBell} label="Subscribe" isExpanded={isExpanded} />
           <SidebarItem to="/contact" Icon={FaPhone} label="Contact us" isExpanded={isExpanded} />
           <SidebarItem to="/join" Icon={FaFacebookMessenger} label="Video Call" isExpanded={isExpanded} />
+          <SidebarItem to="/events" Icon={FaFacebookMessenger} label="Events" isExpanded={isExpanded} />
 
           {user && (
             <>

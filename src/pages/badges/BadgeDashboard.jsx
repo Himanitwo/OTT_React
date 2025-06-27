@@ -129,7 +129,7 @@ export default function BadgeDashboard() {
     ))}
   </div>
 
-  <h2 className="text-2xl font-bold mb-4">🌍 Global Leaderboard</h2>
+  <h2 className="text-2xl font-bold mb-4">Global Leaderboard</h2>
   <div className="leaderboard p-4">
     {mockLeaderboard.map((user, index) => (
       <div
