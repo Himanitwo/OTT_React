@@ -59,8 +59,8 @@ const App = () => {
             >
               <Routes>
                 <Route path="/" element={<Homepage />} />
-                <Route path="/explore" element={<Explore />} />
-                <Route path="/setting" element={<SettingsPage />} />
+                {/* <Route path="/explore" element={<Explore />} />
+                <Route path="/setting" element={<SettingsPage />} /> */}
                 <Route path="/loginpage" element={<LoginPage />} />
                 {/* <Route path="/movie/:id" element={<MovieDetailPage />} /> Dynamic route for movie details */}
                 <Route path="/watch/:id" element={<WatchPage />}/>
