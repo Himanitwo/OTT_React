@@ -68,6 +68,7 @@
     "globals": "^16.0.0",
     "postcss": "^8.5.3",
     "rollup-plugin-visualizer": "^5.14.0",
+    "rollup": "^3.29.4",
     "tailwindcss": "^4.1.5",
     "vite": "^6.3.5"
   }
