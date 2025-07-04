@@ -265,48 +265,22 @@ io.on("connection", (socket) => {
   handleChatMessages(socket);
   handleLiveStreams(socket);
 
-  // Watch Party handler - Updated version
-  socket.on("joinWatchParty", async ({ roomId, email, name }, callback) => {
-    if (!roomId) {
-      if (callback) callback({ status: "error", error: "Room ID is required" });
-      return;
-    }
-
-    // Use email if available, otherwise generate a unique identifier
-    const userIdentifier = email || `guest-${socket.id.substring(0, 8)}`;
-    const displayName = name || userIdentifier.split('@')[0];
-
+  // Watch Party handler
+  socket.on("joinWatchParty", async ({ roomId, name = "Guest" }, callback) => {
     socket.join(roomId);
-    console.log(`🎥 ${displayName} joined Watch Party ${roomId}`);
+    console.log(`🎥 ${name} joined Watch Party ${roomId}`);
 
-    // Initialize room if it doesn't exist
     if (!watchPartyParticipants[roomId]) {
-      watchPartyParticipants[roomId] = new Map(); // Using Map for better performance
+      watchPartyParticipants[roomId] = [];
     }
 
-    // Update or add participant
-    watchPartyParticipants[roomId].set(socket.id, {
-      id: socket.id,
-      email: userIdentifier,
-      name: displayName,
-      joinedAt: new Date()
-    });
-
-    // Convert Map to array for emitting
-    const participantsArray = Array.from(watchPartyParticipants[roomId].values());
-    io.to(roomId).emit("participantList", participantsArray);
+    watchPartyParticipants[roomId].push({ id: socket.id, name });
+    io.to(roomId).emit("participantList", watchPartyParticipants[roomId]);
 
     try {
-      const chatHistory = await WatchPartyMessage.find({ roomId })
-        .sort({ timestamp: 1 })
-        .limit(100);
-      
+      const chatHistory = await WatchPartyMessage.find({ roomId }).sort({ timestamp: 1 }).limit(100);
       if (callback) {
-        callback({ 
-          status: "success", 
-          history: chatHistory,
-          yourInfo: { id: socket.id, name: displayName }
-        });
+        callback({ status: "success", history: chatHistory });
       } else {
         socket.emit("watchChatHistory", chatHistory);
       }
@@ -316,48 +290,10 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Handle watch party messages
-  socket.on("sendWatchMessage", async ({ roomId, text }, callback) => {
-    try {
-      if (!watchPartyParticipants[roomId]?.has(socket.id)) {
-        throw new Error("You're not in this watch party");
-      }
-
-      const participant = watchPartyParticipants[roomId].get(socket.id);
-      const newMessage = new WatchPartyMessage({
-        roomId,
-        sender: participant.name,
-        text,
-        timestamp: new Date()
-      });
-
-      await newMessage.save();
-      io.to(roomId).emit("newWatchMessage", {
-        sender: participant.name,
-        text,
-        timestamp: new Date()
-      });
-
-      if (callback) callback({ status: "success" });
-    } catch (err) {
-      console.error("❌ Error sending watch party message:", err);
-      if (callback) callback({ status: "error", error: err.message });
-    }
-  });
-
   socket.on("disconnect", () => {
     console.log("❌ Disconnected:", socket.id);
     
-    // Clean up watch party participants
-    for (const roomId in watchPartyParticipants) {
-      if (watchPartyParticipants[roomId].has(socket.id)) {
-        watchPartyParticipants[roomId].delete(socket.id);
-        const participantsArray = Array.from(watchPartyParticipants[roomId].values());
-        io.to(roomId).emit("participantList", participantsArray);
-      }
-    }
-
-    // Clean up viewer counts
+    // Clean up viewer counts when users disconnect
     streamViewers.forEach((viewers, roomId) => {
       if (viewers.has(socket.id)) {
         viewers.delete(socket.id);
