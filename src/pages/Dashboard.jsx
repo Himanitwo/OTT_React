@@ -78,7 +78,7 @@ const fetchProfile = async (user) => {
 
     try {
       const token = await user.getIdToken();
-      await fetch(`http://localhost:4000/api/profile/${user.uid}`, {
+      await fetch(`http://localhost:4001/api/profile/${user.uid}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

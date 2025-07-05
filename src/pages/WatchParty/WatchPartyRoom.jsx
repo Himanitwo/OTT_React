@@ -7,7 +7,7 @@ import ParticipantList from "./participantsList";
 import WatchPartyChat from "./watchpartychat";
 
 // NEW SOCKET INIT
-const socket = io("http://localhost:4000", { autoConnect: false });
+const socket = io("http://localhost:400", { autoConnect: false });
 
 const WatchPartyRoom = () => {
   const { roomId } = useParams();
