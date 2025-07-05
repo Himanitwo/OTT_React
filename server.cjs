@@ -113,8 +113,25 @@ const handleChatMessages = (socket) => {
 
 // Live Stream handlers
 const handleLiveStreams = (socket) => {
+  // Start a new live stream
   socket.on("startStream", async ({ email, title }, callback) => {
     try {
+      // Check for existing active stream by this user
+      const existingStream = await LiveStream.findOne({ 
+        email, 
+        endedAt: { $exists: false } 
+      });
+      
+      // End previous stream if exists
+      if (existingStream) {
+        await LiveStream.findByIdAndUpdate(existingStream._id, { 
+          endedAt: new Date() 
+        });
+        io.emit("liveEnded", { roomId: existingStream.roomId });
+        streamViewers.delete(existingStream.roomId);
+      }
+
+      // Create new stream
       const roomId = uuidv4();
       const thumbnail = `https://ui-avatars.com/api/?name=${encodeURIComponent(email)}&background=random`;
 
@@ -129,7 +146,7 @@ const handleLiveStreams = (socket) => {
       });
 
       await newStream.save();
-      streamViewers.set(roomId, new Set());
+      streamViewers.set(roomId, new Set()); // Initialize viewer tracking
 
       io.emit("newLiveStarted", newStream);
       if (callback) callback({ status: "success", stream: newStream });
@@ -139,13 +156,20 @@ const handleLiveStreams = (socket) => {
     }
   });
 
+  // End a live stream
   socket.on("endStream", async ({ roomId }, callback) => {
     try {
-      await LiveStream.findOneAndUpdate(
+      const stream = await LiveStream.findOneAndUpdate(
         { roomId },
-        { $set: { endedAt: new Date() } }
+        { $set: { endedAt: new Date() } },
+        { new: true }
       );
 
+      if (!stream) {
+        throw new Error("Stream not found");
+      }
+
+      // Clean up
       streamViewers.delete(roomId);
       io.emit("liveEnded", { roomId });
 
@@ -156,16 +180,21 @@ const handleLiveStreams = (socket) => {
     }
   });
 
+  // Viewer joins a stream
   socket.on("joinStream", ({ roomId, email }, callback) => {
     try {
       socket.join(roomId);
       
+      // Initialize viewer tracking if needed
       if (!streamViewers.has(roomId)) {
         streamViewers.set(roomId, new Set());
       }
+      
+      // Add viewer
       streamViewers.get(roomId).add(socket.id);
-
       const viewers = streamViewers.get(roomId).size;
+      
+      // Update all clients
       io.emit("viewerUpdate", { roomId, viewers });
 
       if (callback) callback({ status: "success", viewers });
@@ -175,6 +204,7 @@ const handleLiveStreams = (socket) => {
     }
   });
 
+  // Viewer leaves a stream
   socket.on("leaveStream", ({ roomId }) => {
     if (streamViewers.has(roomId)) {
       streamViewers.get(roomId).delete(socket.id);
@@ -183,7 +213,50 @@ const handleLiveStreams = (socket) => {
     }
     socket.leave(roomId);
   });
+
+  // Handle disconnections (clean up abandoned streams)
+  socket.on("disconnect", () => {
+    // Check if this socket was hosting any streams
+    LiveStream.findOne({ 
+      hostSocketId: socket.id, 
+      endedAt: { $exists: false } 
+    }).then(stream => {
+      if (stream) {
+        // Mark stream as ended
+        LiveStream.findByIdAndUpdate(stream._id, { 
+          endedAt: new Date() 
+        }).then(() => {
+          io.emit("liveEnded", { roomId: stream.roomId });
+          streamViewers.delete(stream.roomId);
+        });
+      }
+    });
+
+    // Clean up viewer counts for all streams
+    streamViewers.forEach((viewers, roomId) => {
+      if (viewers.has(socket.id)) {
+        viewers.delete(socket.id);
+        io.emit("viewerUpdate", { roomId, viewers: viewers.size });
+      }
+    });
+  });
 };
+
+const cleanupOldStreams = async () => {
+  try {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - 30); // 30 days threshold
+    
+    const result = await LiveStream.deleteMany({
+      endedAt: { $exists: true, $lt: cutoffDate }
+    });
+    
+    console.log(`🧹 Cleaned up ${result.deletedCount} old streams`);
+  } catch (err) {
+    console.error("❌ Stream cleanup error:", err);
+  }
+};
+
 
 // Socket connection
 io.on("connection", (socket) => {

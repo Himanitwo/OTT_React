@@ -1,330 +1,421 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
-import { ReactMediaRecorder } from "react-media-recorder";
+import React, { useState, useRef, useEffect } from 'react';
+import { Device } from 'mediasoup-client';
+import { Button, Card, Grid, Typography, Box, IconButton } from '@mui/material';
+import { FiberManualRecord, Stop, Videocam, VideocamOff, Mic, MicOff } from '@mui/icons-material';
 
-const LiveStream = () => {
-  const { roomId } = useParams();
-  const videoRef = useRef(null);
-  const streamRef = useRef(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [videoEnabled, setVideoEnabled] = useState(true);
-  const [audioEnabled, setAudioEnabled] = useState(true);
-  const [screenStream, setScreenStream] = useState(null);
-  const [mirrored, setMirrored] = useState(false);
-  const [recordingStatus, setRecordingStatus] = useState("idle");
-  const [recordingTime, setRecordingTime] = useState(0);
-  const timerRef = useRef(null);
+const LiveStream = ({ streamId }) => {
+  // State management
+  const [device, setDevice] = useState(null);
+  const [transport, setTransport] = useState(null);
+  const [producers, setProducers] = useState([]);
+  const [consumers, setConsumers] = useState([]);
+  const [isLive, setIsLive] = useState(false);
+  const [viewers, setViewers] = useState(0);
+  const [isVideoMuted, setIsVideoMuted] = useState(false);
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // Refs
+  const localVideoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
+  const socketRef = useRef(null);
 
+  // Initialize connection
   useEffect(() => {
-    const startStream = async () => {
+    const initConnection = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { width: 1280, height: 720 }, 
-          audio: true 
-        });
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-        setLoading(false);
-      } catch (err) {
-        console.error("Failed to access camera:", err);
-        setError("Camera access denied or unavailable.");
-        setLoading(false);
+        // Initialize WebSocket connection
+        socketRef.current = new WebSocket('wss://your-mediasoup-server.com');
+        
+        socketRef.current.onopen = () => {
+          console.log('WebSocket connected');
+          initializeMediasoup();
+        };
+
+        socketRef.current.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          handleServerMessage(data);
+        };
+
+        socketRef.current.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          setError('Connection error');
+        };
+
+        socketRef.current.onclose = () => {
+          console.log('WebSocket disconnected');
+        };
+
+      } catch (error) {
+        console.error('Initialization error:', error);
+        setError('Failed to initialize');
       }
     };
 
-    startStream();
+    const initializeMediasoup = async () => {
+      try {
+        const newDevice = new Device();
+        setDevice(newDevice);
+        
+        // Get router capabilities
+        const capabilities = await sendRequest('getRouterCapabilities');
+        await newDevice.load({ routerRtpCapabilities: capabilities });
+        
+        // Create transport
+        const transportInfo = await sendRequest('createTransport', {
+          producing: true,
+          consuming: true
+        });
+        
+        const newTransport = newDevice.createSendTransport(transportInfo);
+        configureTransport(newTransport);
+        setTransport(newTransport);
+
+      } catch (error) {
+        console.error('Mediasoup initialization failed:', error);
+        setError('Media setup failed');
+      }
+    };
+
+    initConnection();
 
     return () => {
-      stopAllStreams();
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (socketRef.current?.readyState === WebSocket.OPEN) {
+        socketRef.current.close();
+      }
+      cleanupMedia();
     };
   }, []);
 
-  const stopAllStreams = () => {
-    streamRef.current?.getTracks().forEach((track) => track.stop());
-    screenStream?.getTracks().forEach((track) => track.stop());
+  const configureTransport = (transport) => {
+    transport.on('connect', async ({ dtlsParameters }, callback, errback) => {
+      try {
+        await sendRequest('connectTransport', {
+          transportId: transport.id,
+          dtlsParameters
+        });
+        callback();
+      } catch (error) {
+        errback(error);
+        setError('Transport connection failed');
+      }
+    });
+
+    transport.on('produce', async ({ kind, rtpParameters }, callback, errback) => {
+      try {
+        const { id } = await sendRequest('produce', {
+          transportId: transport.id,
+          kind,
+          rtpParameters
+        });
+        callback({ id });
+      } catch (error) {
+        errback(error);
+        setError('Failed to produce media');
+      }
+    });
+
+    transport.on('connectionstatechange', (state) => {
+      if (state === 'failed') {
+        setError('Connection failed');
+        stopStreaming();
+      }
+    });
+  };
+
+  const startStreaming = async () => {
+    try {
+      setError(null);
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          frameRate: { ideal: 30 }
+        },
+        audio: true
+      });
+
+      localVideoRef.current.srcObject = stream;
+
+      // Produce video track
+      const videoTrack = stream.getVideoTracks()[0];
+      const videoProducer = await transport.produce({
+        track: videoTrack,
+        encodings: [
+          { maxBitrate: 2500000 }, // HD
+          { maxBitrate: 1000000 }, // Medium
+          { maxBitrate: 500000 }   // Low
+        ],
+        codecOptions: {
+          videoGoogleStartBitrate: 1000
+        }
+      });
+
+      // Produce audio track
+      const audioTrack = stream.getAudioTracks()[0];
+      const audioProducer = await transport.produce({
+        track: audioTrack,
+        codecOptions: {
+          opusStereo: true,
+          opusDtx: true
+        }
+      });
+
+      setProducers([videoProducer, audioProducer]);
+      setIsLive(true);
+      await sendRequest('startStream', { streamId });
+
+    } catch (error) {
+      console.error('Stream start failed:', error);
+      setError('Failed to start streaming');
+      cleanupMedia();
+    }
+  };
+
+  const stopStreaming = async () => {
+    try {
+      await sendRequest('stopStream', { streamId });
+      cleanupMedia();
+      setIsLive(false);
+      setError(null);
+    } catch (error) {
+      console.error('Stream stop failed:', error);
+      setError('Failed to stop streaming');
+    }
+  };
+
+  const cleanupMedia = () => {
+    producers.forEach(producer => producer?.close());
+    consumers.forEach(consumer => consumer?.close());
+    setProducers([]);
+    setConsumers([]);
+    
+    if (localVideoRef.current?.srcObject) {
+      localVideoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      localVideoRef.current.srcObject = null;
+    }
   };
 
   const toggleVideo = () => {
-    const videoTrack = streamRef.current?.getVideoTracks()[0];
-    if (videoTrack) {
-      videoTrack.enabled = !videoTrack.enabled;
-      setVideoEnabled(videoTrack.enabled);
+    if (producers[0]) {
+      producers[0].track.enabled = !producers[0].track.enabled;
+      setIsVideoMuted(!producers[0].track.enabled);
     }
   };
 
   const toggleAudio = () => {
-    const audioTrack = streamRef.current?.getAudioTracks()[0];
-    if (audioTrack) {
-      audioTrack.enabled = !audioTrack.enabled;
-      setAudioEnabled(audioTrack.enabled);
+    if (producers[1]) {
+      producers[1].track.enabled = !producers[1].track.enabled;
+      setIsAudioMuted(!producers[1].track.enabled);
     }
   };
 
-  const toggleMirror = () => {
-    setMirrored(!mirrored);
-  };
-
-  const startScreenShare = async () => {
-    try {
-      const screen = await navigator.mediaDevices.getDisplayMedia({ 
-        video: { cursor: "always" },
-        audio: true 
-      });
-      setScreenStream(screen);
-      if (videoRef.current) {
-        videoRef.current.srcObject = screen;
+  const sendRequest = (action, data = {}) => {
+    return new Promise((resolve, reject) => {
+      if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+        return reject(new Error('WebSocket not connected'));
       }
 
-      screen.getVideoTracks()[0].onended = () => {
-        if (streamRef.current && videoRef.current) {
-          videoRef.current.srcObject = streamRef.current;
+      const requestId = Date.now().toString();
+      const timeout = setTimeout(() => {
+        reject(new Error('Request timeout'));
+      }, 10000);
+
+      const handleResponse = (event) => {
+        const response = JSON.parse(event.data);
+        if (response.requestId === requestId) {
+          clearTimeout(timeout);
+          socketRef.current.removeEventListener('message', handleResponse);
+          if (response.error) {
+            reject(response.error);
+          } else {
+            resolve(response.data);
+          }
         }
       };
-    } catch (err) {
-      console.error("Screen share failed:", err);
+
+      socketRef.current.addEventListener('message', handleResponse);
+      socketRef.current.send(JSON.stringify({
+        requestId,
+        action,
+        data
+      }));
+    });
+  };
+
+  const handleServerMessage = (data) => {
+    switch (data.type) {
+      case 'consumerCreated':
+        handleNewConsumer(data.consumer);
+        break;
+      case 'viewerCount':
+        setViewers(data.count);
+        break;
+      case 'error':
+        setError(data.message);
+        break;
+      default:
+        console.log('Unhandled message:', data);
     }
   };
 
-  const stopScreenShare = () => {
-    if (screenStream) {
-      screenStream.getTracks().forEach(track => track.stop());
-      setScreenStream(null);
-      if (streamRef.current && videoRef.current) {
-        videoRef.current.srcObject = streamRef.current;
+  const handleNewConsumer = async (consumerInfo) => {
+    try {
+      const consumer = await transport.consume({
+        id: consumerInfo.id,
+        producerId: consumerInfo.producerId,
+        kind: consumerInfo.kind,
+        rtpParameters: consumerInfo.rtpParameters
+      });
+
+      setConsumers(prev => [...prev, consumer]);
+      
+      if (consumer.kind === 'video' && remoteVideoRef.current) {
+        const stream = new MediaStream();
+        stream.addTrack(consumer.track);
+        remoteVideoRef.current.srcObject = stream;
       }
-    }
-  };
 
-  const stopStream = () => {
-    stopAllStreams();
-    setLoading(true);
-    setError("Live stream has ended.");
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const startRecordingTimer = () => {
-    setRecordingTime(0);
-    timerRef.current = setInterval(() => {
-      setRecordingTime(prev => prev + 1);
-    }, 1000);
-  };
-
-  const stopRecordingTimer = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+    } catch (error) {
+      console.error('Failed to create consumer:', error);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4">
-      {loading && !error && (
-        <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-          <p className="text-xl font-bold">Starting your live stream...</p>
-        </div>
-      )}
+    <Card sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
+      <Typography variant="h5" gutterBottom>
+        Live Stream
+      </Typography>
       
       {error && (
-        <div className="bg-red-900/50 p-4 rounded-lg max-w-md text-center">
-          <p className="text-red-300 text-lg">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-          >
-            🔄 Try Again
-          </button>
-        </div>
+        <Typography color="error" sx={{ mb: 2 }}>
+          {error}
+        </Typography>
       )}
-      
-      {!loading && !error && (
-        <>
-          <div className="w-full max-w-6xl flex flex-col md:flex-row gap-6">
-            {/* Video Area */}
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <span className="text-red-500 animate-pulse">●</span> Live Stream - Room: {roomId}
-              </h1>
-              
-              <div className="relative">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  muted
-                  playsInline
-                  className={`w-full rounded-lg shadow-xl ${mirrored ? 'transform -scale-x-100' : ''}`}
-                />
-                
-                {recordingStatus === 'recording' && (
-                  <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-md flex items-center gap-2">
-                    <span className="animate-pulse">●</span> Recording {formatTime(recordingTime)}
-                  </div>
-                )}
-              </div>
-              
-              {/* Primary Controls */}
-              <div className="mt-4 flex flex-wrap gap-3 justify-center bg-gray-800/50 p-4 rounded-lg">
-                <button 
-                  onClick={toggleVideo} 
-                  className={`flex items-center gap-2 px-4 py-2 rounded ${videoEnabled ? 'bg-gray-600 hover:bg-gray-500' : 'bg-red-600 hover:bg-red-500'}`}
+
+      <Grid container spacing={3}>
+        {/* Controls */}
+        <Grid item xs={12}>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            {!isLive ? (
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<FiberManualRecord />}
+                onClick={startStreaming}
+                size="large"
+              >
+                Go Live
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="contained"
+                  color="error"
+                  startIcon={<Stop />}
+                  onClick={stopStreaming}
+                  size="large"
                 >
-                  {videoEnabled ? '📹 Video On' : '📵 Video Off'}
-                </button>
-                
-                <button 
-                  onClick={toggleAudio} 
-                  className={`flex items-center gap-2 px-4 py-2 rounded ${audioEnabled ? 'bg-gray-600 hover:bg-gray-500' : 'bg-red-600 hover:bg-red-500'}`}
-                >
-                  {audioEnabled ? '🎙️ Mic On' : '🔇 Mic Off'}
-                </button>
-                
-                <button 
-                  onClick={toggleMirror} 
-                  className={`flex items-center gap-2 px-4 py-2 rounded ${mirrored ? 'bg-blue-600 hover:bg-blue-500' : 'bg-gray-600 hover:bg-gray-500'}`}
-                >
-                  {mirrored ? '🪞 Mirror On' : '🪞 Mirror Off'}
-                </button>
-                
-                {!screenStream ? (
-                  <button 
-                    onClick={startScreenShare} 
-                    className="flex items-center gap-2 px-4 py-2 rounded bg-purple-600 hover:bg-purple-500"
-                  >
-                    🖥️ Share Screen
-                  </button>
-                ) : (
-                  <button 
-                    onClick={stopScreenShare} 
-                    className="flex items-center gap-2 px-4 py-2 rounded bg-red-600 hover:bg-red-500"
-                  >
-                    🖥️ Stop Sharing
-                  </button>
-                )}
-                
-                <button 
-                  onClick={stopStream} 
-                  className="flex items-center gap-2 px-4 py-2 rounded bg-red-700 hover:bg-red-600"
-                >
-                  ⏹️ End Stream
-                </button>
-              </div>
-            </div>
-            
-            {/* Sidebar with Recording Controls */}
-            <div className="w-full md:w-80 bg-gray-800/50 p-4 rounded-lg">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                📹 Recording Controls
-              </h2>
-              
-              <ReactMediaRecorder
-                video
-                audio
-                onStart={() => {
-                  setRecordingStatus('recording');
-                  startRecordingTimer();
+                  Stop Stream
+                </Button>
+                <IconButton onClick={toggleVideo} color={isVideoMuted ? "error" : "default"}>
+                  {isVideoMuted ? <VideocamOff /> : <Videocam />}
+                </IconButton>
+                <IconButton onClick={toggleAudio} color={isAudioMuted ? "error" : "default"}>
+                  {isAudioMuted ? <MicOff /> : <Mic />}
+                </IconButton>
+              </>
+            )}
+            <Typography variant="body1">
+              {viewers} {viewers === 1 ? 'viewer' : 'viewers'}
+            </Typography>
+          </Box>
+        </Grid>
+
+        {/* Video Feeds */}
+        <Grid item xs={12} md={6}>
+          <Card sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Your Stream
+            </Typography>
+            <Box sx={{ position: 'relative', bgcolor: 'black', borderRadius: 1 }}>
+              <video
+                ref={localVideoRef}
+                autoPlay
+                playsInline
+                muted
+                style={{
+                  width: '100%',
+                  aspectRatio: '16/9',
+                  display: isVideoMuted ? 'none' : 'block'
                 }}
-                onStop={() => {
-                  setRecordingStatus('idle');
-                  stopRecordingTimer();
-                }}
-                render={({
-                  status,
-                  startRecording,
-                  stopRecording,
-                  mediaBlobUrl,
-                }) => (
-                  <div className="space-y-4">
-                    <div className="flex flex-col gap-3">
-                      <button 
-                        onClick={startRecording} 
-                        disabled={status === 'recording'}
-                        className={`flex items-center justify-center gap-2 px-4 py-3 rounded ${status === 'recording' ? 'bg-gray-600 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500'}`}
-                      >
-                        🎬 {status === 'recording' ? 'Recording...' : 'Start Recording'}
-                      </button>
-                      
-                      <button 
-                        onClick={stopRecording} 
-                        disabled={status !== 'recording'}
-                        className={`flex items-center justify-center gap-2 px-4 py-3 rounded ${status !== 'recording' ? 'bg-gray-600 cursor-not-allowed' : 'bg-yellow-600 hover:bg-yellow-500'}`}
-                      >
-                        ⏹️ Stop Recording
-                      </button>
-                    </div>
-                    
-                    {status === 'recording' && (
-                      <div className="text-center py-2 bg-gray-700 rounded">
-                        ⏱️ Recording: {formatTime(recordingTime)}
-                      </div>
-                    )}
-                    
-                    {mediaBlobUrl && (
-                      <div className="mt-4 space-y-3">
-                        <h3 className="font-medium flex items-center gap-2">
-                          📼 Recording Preview
-                        </h3>
-                        <video 
-                          src={mediaBlobUrl} 
-                          controls 
-                          className="w-full rounded border border-gray-600"
-                        />
-                        <a
-                          href={mediaBlobUrl}
-                          download={`stream-recording-${roomId}-${new Date().toISOString().slice(0,10)}.mp4`}
-                          className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded"
-                        >
-                          💾 Download Recording
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                )}
               />
-              
-              {/* Additional Features */}
-              <div className="mt-6">
-                <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
-                  ⚙️ Stream Settings
-                </h3>
-                <div className="space-y-2">
-                  <button className="w-full text-left px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded flex items-center gap-2">
-                    🌡️ Adjust Video Quality
-                  </button>
-                  <button className="w-full text-left px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded flex items-center gap-2">
-                    🎚️ Audio Settings
-                  </button>
-                  <button className="w-full text-left px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded flex items-center gap-2">
-                    🎛️ Advanced Controls
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Status Bar */}
-          <div className="mt-6 w-full max-w-6xl bg-gray-800/50 p-3 rounded-lg flex flex-wrap items-center justify-between gap-2 text-sm">
-            <div className="flex items-center gap-2">
-              <span className={`w-3 h-3 rounded-full ${!error ? 'bg-green-500' : 'bg-red-500'}`}></span>
-              <span>Stream Status: {!error ? 'Live' : 'Error'}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>📹 {videoEnabled ? 'Video: On' : 'Video: Off'}</span>
-              <span>🎙️ {audioEnabled ? 'Audio: On' : 'Audio: Off'}</span>
-              <span>🖥️ {screenStream ? 'Screen Sharing: Active' : 'Screen Sharing: Inactive'}</span>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+              {isVideoMuted && (
+                <Box sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  bgcolor: 'black'
+                }}>
+                  <VideocamOff fontSize="large" />
+                </Box>
+              )}
+              {isLive && (
+                <Box sx={{
+                  position: 'absolute',
+                  top: 8,
+                  left: 8,
+                  bgcolor: 'red',
+                  color: 'white',
+                  px: 1,
+                  borderRadius: 1,
+                  fontSize: 14
+                }}>
+                  LIVE
+                </Box>
+              )}
+            </Box>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Viewers
+            </Typography>
+            <Box sx={{ bgcolor: 'black', borderRadius: 1, aspectRatio: '16/9' }}>
+              <video
+                ref={remoteVideoRef}
+                autoPlay
+                playsInline
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  display: consumers.length > 0 ? 'block' : 'none'
+                }}
+              />
+              {consumers.length === 0 && (
+                <Box sx={{
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'text.secondary'
+                }}>
+                  <Typography>Waiting for viewers...</Typography>
+                </Box>
+              )}
+            </Box>
+          </Card>
+        </Grid>
+      </Grid>
+    </Card>
   );
 };
 

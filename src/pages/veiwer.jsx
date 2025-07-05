@@ -1,218 +1,118 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useRef, useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Device } from 'mediasoup-client';
 import { io } from "socket.io-client";
+const socket = io("http://localhost:4001", {
+  autoConnect: false,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
+});
 
 const Viewer = () => {
-  const { roomId } = useParams();
-  const navigate = useNavigate();
+  const { streamId } = useParams();
   const videoRef = useRef(null);
-  const peerRef = useRef(null);
-  const socketRef = useRef(null);
-  
-  const [status, setStatus] = useState("connecting");
-  const [error, setError] = useState(null);
+  const deviceRef = useRef(null);
+  const consumerTransportRef = useRef(null);
+  const videoConsumerRef = useRef(null);
+  const audioConsumerRef = useRef(null);
   const [streamInfo, setStreamInfo] = useState(null);
-  const [retryCount, setRetryCount] = useState(0);
-
-  const handleError = (err) => {
-    console.error(err);
-    setError(err.message || "An error occurred");
-    setStatus("error");
-  };
-
-  const setupWebRTC = async (offer, from) => {
-    try {
-      setStatus("setting_up_stream");
-      
-      const peer = new RTCPeerConnection({
-        iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
-          { urls: "stun:global.stun.twilio.com:3478" }
-        ]
-      });
-      peerRef.current = peer;
-
-      peer.ontrack = (event) => {
-        if (event.streams && event.streams[0]) {
-          videoRef.current.srcObject = event.streams[0];
-          setStatus("watching");
-        }
-      };
-
-      peer.oniceconnectionstatechange = () => {
-        console.log("ICE connection state:", peer.iceConnectionState);
-        if (peer.iceConnectionState === "disconnected") {
-          setStatus("disconnected");
-        }
-      };
-
-      peer.onconnectionstatechange = () => {
-        console.log("Connection state:", peer.connectionState);
-      };
-
-      await peer.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = await peer.createAnswer();
-      await peer.setLocalDescription(answer);
-
-      socketRef.current.emit("answer", { answer, to: from });
-
-      peer.onicecandidate = (event) => {
-        if (event.candidate) {
-          socketRef.current.emit("ice-candidate", { 
-            candidate: event.candidate, 
-            to: from 
-          });
-        }
-      };
-    } catch (err) {
-      handleError(err);
-    }
-  };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const initializeConnection = () => {
-      socketRef.current = io(process.env.REACT_APP_SIGNALING_SERVER || "http://localhost:4001", {
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-      });
+    const joinStream = async () => {
+      try {
+        // Get stream info and router capabilities
+        const [streamData, { routerRtpCapabilities }] = await Promise.all([
+          socket.request('getStreamInfo', { streamId }),
+          socket.request('getRouterCapabilities')
+        ]);
 
-      socketRef.current.on("connect", () => {
-        console.log("Connected to signaling server");
-        setStatus("joining");
-        socketRef.current.emit("joinLiveStream", { roomId, email: "viewer" });
-        setRetryCount(0); // Reset retry count on successful connection
-      });
+        setStreamInfo(streamData);
 
-      socketRef.current.on("connect_error", (err) => {
-        console.error("Connection error:", err);
-        setError("Failed to connect to server");
-        setStatus("error");
-        setRetryCount(prev => prev + 1);
-      });
+        // Load device
+        deviceRef.current = new Device();
+        await deviceRef.current.load({ routerRtpCapabilities });
 
-      socketRef.current.on("offer", async ({ offer, from }) => {
-        await setupWebRTC(offer, from);
-      });
+        // Create consumer transport
+        const transportInfo = await socket.request('createTransport', {
+          forceTcp: false,
+          producing: false,
+          consuming: true
+        });
 
-      socketRef.current.on("ice-candidate", async ({ candidate }) => {
-        try {
-          if (peerRef.current && candidate) {
-            await peerRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+        consumerTransportRef.current = deviceRef.current.createRecvTransport(transportInfo);
+
+        // Set up transport event handlers
+        consumerTransportRef.current.on('connect', async ({ dtlsParameters }, callback, errback) => {
+          try {
+            await socket.request('connectTransport', {
+              transportId: consumerTransportRef.current.id,
+              dtlsParameters
+            });
+            callback();
+          } catch (error) {
+            errback(error);
           }
-        } catch (err) {
-          console.error("ICE candidate error:", err);
+        });
+
+        // Get available producers and consume them
+        const { producers } = await socket.request('getProducers', { streamId });
+
+        for (const producer of producers) {
+          const { rtpParameters } = await socket.request('consume', {
+            transportId: consumerTransportRef.current.id,
+            producerId: producer.id,
+            rtpCapabilities: deviceRef.current.rtpCapabilities
+          });
+
+          const consumer = await consumerTransportRef.current.consume({
+            id: rtpParameters.id,
+            producerId: producer.id,
+            kind: producer.kind,
+            rtpParameters
+          });
+
+          if (producer.kind === 'video') {
+            videoConsumerRef.current = consumer;
+          } else {
+            audioConsumerRef.current = consumer;
+          }
+
+          const stream = new MediaStream();
+          stream.addTrack(consumer.track);
+          if (videoRef.current) videoRef.current.srcObject = stream;
         }
-      });
 
-      socketRef.current.on("streamNotFound", () => {
-        setError("Stream not found or has ended");
-        setStatus("error");
-      });
-
-      socketRef.current.on("liveEnded", () => {
-        setError("The stream has ended");
-        setStatus("ended");
-      });
-
-      socketRef.current.on("streamInfo", (info) => {
-        setStreamInfo(info);
-      });
+        setLoading(false);
+      } catch (err) {
+        console.error('Error joining stream:', err);
+        setError('Failed to join stream');
+        setLoading(false);
+      }
     };
 
-    initializeConnection();
+    joinStream();
 
     return () => {
-      if (peerRef.current) {
-        peerRef.current.close();
-      }
-      if (socketRef.current) {
-        socketRef.current.disconnect();
+      // Clean up on unmount
+      if (videoConsumerRef.current) videoConsumerRef.current.close();
+      if (audioConsumerRef.current) audioConsumerRef.current.close();
+      if (consumerTransportRef.current) consumerTransportRef.current.close();
+      
+      if (videoRef.current?.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
       }
     };
-  }, [roomId, retryCount]);
+  }, [streamId]);
 
-  const statusMessages = {
-    connecting: "Connecting to server...",
-    joining: "Joining stream...",
-    setting_up_stream: "Setting up video connection...",
-    watching: "Stream is live",
-    disconnected: "Connection lost - trying to reconnect",
-    error: "Error occurred",
-    ended: "Stream has ended"
-  };
+  if (loading) return <div>Loading stream...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-4">
-      <div className="w-full max-w-4xl">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl font-bold flex items-center">
-            {status === "watching" ? (
-              <span className="text-red-500 mr-2">●</span>
-            ) : (
-              <span className="text-gray-500 mr-2">○</span>
-            )}
-            {streamInfo?.title || `Stream ${roomId}`}
-          </h1>
-          <button 
-            onClick={() => navigate("/")}
-            className="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded"
-          >
-            Leave
-          </button>
-        </div>
-
-        {error ? (
-          <div className="bg-red-900/50 p-6 rounded-lg text-center">
-            <p className="text-lg mb-4">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded"
-            >
-              Try Again
-            </button>
-          </div>
-        ) : (
-          <>
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className={`w-full rounded-lg shadow-xl ${
-                status !== "watching" ? "hidden" : ""
-              }`}
-              onError={(e) => {
-                if (e.target.error && e.target.error.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) {
-                  setError("Please allow autoplay for this site");
-                }
-              }}
-            />
-            
-            {status !== "watching" && (
-              <div className="aspect-video bg-gray-800 rounded-lg flex flex-col items-center justify-center">
-                <div className="text-4xl mb-4">
-                  {status === "ended" ? "⏹️" : "⏳"}
-                </div>
-                <p className="text-xl">{statusMessages[status]}</p>
-                {status === "disconnected" && (
-                  <div className="mt-2 h-1 w-32 bg-gray-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500 animate-pulse"></div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="mt-4 text-sm text-gray-400">
-              <p>Status: {statusMessages[status]}</p>
-              {streamInfo && (
-                <p>Host: {streamInfo.email} • Started: {
-                  new Date(streamInfo.startedAt).toLocaleString()
-                }</p>
-              )}
-            </div>
-          </>
-        )}
-      </div>
+    <div className="viewer-container">
+      {streamInfo && <h2>{streamInfo.title}</h2>}
+      <video ref={videoRef} autoPlay playsInline controls />
     </div>
   );
 };

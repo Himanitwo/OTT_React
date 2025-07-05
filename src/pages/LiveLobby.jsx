@@ -1,30 +1,58 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { io } from "socket.io-client";
+import { 
+  Box, 
+  Typography, 
+  Card, 
+  CardContent, 
+  CardMedia, 
+  Grid, 
+  CircularProgress,
+  Button,
+  Avatar
+} from '@mui/material';
+import { FiberManualRecord, People } from '@mui/icons-material';
+
+// Initialize socket connection
+const socket = io("http://localhost:4001", {
+  autoConnect: false,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
+});
+
+// Add request-response pattern to socket
+socket.request = (event, data = {}) => {
+  return new Promise((resolve, reject) => {
+    socket.emit(event, data, (response) => {
+      if (response.error) {
+        reject(response.error);
+      } else {
+        resolve(response);
+      }
+    });
+  });
+};
 
 const LiveLobby = () => {
   const [streams, setStreams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [socket, setSocket] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Initialize Socket.IO connection
-    const newSocket = io("http://localhost:4001", {
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-    });
-    setSocket(newSocket);
+    // Connect socket when component mounts
+    socket.connect();
 
-    // Fetch initial streams
     const fetchStreams = async () => {
       try {
-        const res = await fetch("http://localhost:4001/live-streams");
-        if (!res.ok) throw new Error("Failed to fetch streams");
-        const { data } = await res.json();
-        setStreams(data);
+        setLoading(true);
+        setError(null);
+        const response = await socket.request('getLiveStreams');
+        setStreams(response);
       } catch (err) {
-        setError(err.message);
+        console.error('Error fetching streams:', err);
+        setError('Failed to load streams. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -32,138 +60,171 @@ const LiveLobby = () => {
 
     fetchStreams();
 
-    // Socket event listeners
-    newSocket.on("connect", () => {
-      console.log("Connected to live stream server");
-      setError(null);
-    });
-
-    newSocket.on("connect_error", (err) => {
-      console.error("Connection error:", err);
-      setError("Failed to connect to live stream server");
-    });
-
-    newSocket.on("newLiveStarted", (stream) => {
+    // Set up socket listeners
+    const onStreamStarted = (stream) => {
       setStreams(prev => [...prev, stream]);
-    });
+    };
 
-    newSocket.on("liveEnded", ({ roomId }) => {
-      setStreams(prev => prev.filter(s => s.roomId !== roomId));
-    });
+    const onStreamEnded = (streamId) => {
+      setStreams(prev => prev.filter(s => s.id !== streamId));
+    };
 
-    newSocket.on("viewerUpdate", ({ roomId, viewers }) => {
-      setStreams(prev => prev.map(stream => 
-        stream.roomId === roomId ? { ...stream, viewers } : stream
-      ));
-    });
+    socket.on('streamStarted', onStreamStarted);
+    socket.on('streamEnded', onStreamEnded);
 
     return () => {
-      newSocket.disconnect();
+      // Clean up listeners
+      socket.off('streamStarted', onStreamStarted);
+      socket.off('streamEnded', onStreamEnded);
+      socket.disconnect();
     };
   }, []);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-xl">Loading live streams...</p>
-        </div>
-      </div>
-    );
-  }
+  const joinStream = (streamId) => {
+    navigate(`/view/${streamId}`);
+  };
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div className="bg-red-900/50 p-6 rounded-xl max-w-md text-center">
-          <h2 className="text-xl font-bold mb-2">Connection Error</h2>
-          <p className="mb-4">{error}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const startNewStream = () => {
+    navigate('/stream/new');
+  };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <h1 className="text-3xl font-bold flex items-center">
-            <span className="text-red-500 mr-2">●</span> Live Streams
-          </h1>
-          <Link
-            to="/live/create"
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg flex items-center transition-colors"
-          >
-            <span className="mr-2">+</span> Go Live
-          </Link>
-        </div>
+    <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        mb: 3
+      }}>
+        <Typography variant="h4" component="h1">
+          Live Streams
+        </Typography>
+        <Button 
+          variant="contained" 
+          startIcon={<FiberManualRecord />}
+          onClick={startNewStream}
+        >
+          Start Streaming
+        </Button>
+      </Box>
 
-        {streams.length === 0 ? (
-          <div className="bg-gray-800/50 rounded-xl p-8 text-center">
-            <div className="text-5xl mb-4">📺</div>
-            <p className="text-xl mb-2">No live streams currently</p>
-            <p className="text-gray-400 mb-4">Start your own stream to begin!</p>
-            <Link
-              to="/live/create"
-              className="inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg"
-            >
-              Start Streaming
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {streams.map((stream) => (
-              <div
-                key={stream.roomId}
-                className="bg-gray-800 rounded-xl overflow-hidden hover:bg-gray-700 transition-all hover:shadow-lg hover:shadow-red-500/20 group"
+      {error && (
+        <Typography color="error" sx={{ mb: 2 }}>
+          {error}
+        </Typography>
+      )}
+
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : streams.length === 0 ? (
+        <Card sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="h6" color="textSecondary">
+            No live streams available
+          </Typography>
+          <Button 
+            variant="outlined" 
+            sx={{ mt: 2 }}
+            onClick={startNewStream}
+          >
+            Be the first to stream
+          </Button>
+        </Card>
+      ) : (
+        <Grid container spacing={3}>
+          {streams.map(stream => (
+            <Grid item xs={12} sm={6} md={4} key={stream.id}>
+              <Card 
+                sx={{ 
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s',
+                  '&:hover': {
+                    transform: 'scale(1.02)',
+                    boxShadow: 6
+                  }
+                }}
+                onClick={() => joinStream(stream.id)}
               >
-                <Link to={`/live/view/${stream.roomId}`} className="block h-full">
-                  <div className="relative aspect-video">
-                    <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
-                      {stream.thumbnail ? (
-                        <img
-                          src={stream.thumbnail}
-                          alt={stream.title}
-                          className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
-                        />
-                      ) : (
-                        <div className="text-4xl">📹</div>
-                      )}
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                      <h3 className="font-bold text-lg line-clamp-1">
-                        {stream.title || "Untitled Stream"}
-                      </h3>
-                      <p className="text-sm text-gray-300 line-clamp-1">
-                        {stream.email}
-                      </p>
-                    </div>
-                    <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full flex items-center">
-                      <span className="mr-1">●</span> LIVE
-                    </div>
-                    <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full flex items-center">
-                      <span className="mr-1">👤</span> {stream.viewers || 0}
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <div className="text-sm text-gray-400">
-                      Started {new Date(stream.startedAt).toLocaleTimeString()}
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+                <CardMedia
+                  component="div"
+                  sx={{
+                    position: 'relative',
+                    height: 0,
+                    paddingTop: '56.25%', // 16:9 aspect ratio
+                    backgroundColor: '#000'
+                  }}
+                >
+                  {stream.thumbnail ? (
+                    <img 
+                      src={stream.thumbnail} 
+                      alt={stream.title}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                  ) : (
+                    <Avatar 
+                      sx={{ 
+                        width: '100%', 
+                        height: '100%',
+                        fontSize: '3rem',
+                        bgcolor: 'primary.main'
+                      }}
+                    >
+                      {stream.hostName?.charAt(0) || 'S'}
+                    </Avatar>
+                  )}
+                  <Box sx={{
+                    position: 'absolute',
+                    top: 8,
+                    left: 8,
+                    bgcolor: 'red',
+                    color: 'white',
+                    px: 1,
+                    borderRadius: 1,
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    <FiberManualRecord sx={{ fontSize: 14, mr: 0.5 }} />
+                    <Typography variant="caption">LIVE</Typography>
+                  </Box>
+                  <Box sx={{
+                    position: 'absolute',
+                    bottom: 8,
+                    right: 8,
+                    bgcolor: 'rgba(0,0,0,0.7)',
+                    color: 'white',
+                    px: 1,
+                    borderRadius: 1,
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    <People sx={{ fontSize: 16, mr: 0.5 }} />
+                    <Typography variant="caption">
+                      {stream.viewerCount || 0}
+                    </Typography>
+                  </Box>
+                </CardMedia>
+                <CardContent>
+                  <Typography gutterBottom variant="h6" noWrap>
+                    {stream.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Hosted by: {stream.hostName || 'Anonymous'}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+    </Box>
   );
 };
 
