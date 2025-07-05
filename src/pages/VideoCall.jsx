@@ -179,7 +179,7 @@ const ChatRoom = () => {
   };
 
   const goToStartLive = () => {
-    navigate("/start-live");
+    navigate("/go-live");
   };
 
   if (loading) {
@@ -344,7 +344,7 @@ const ChatRoom = () => {
       {/* Quick actions footer */}
       <div className="bg-gray-800 p-3 border-t border-gray-700 flex justify-center gap-6">
         <Link
-          to="/live-lobby"
+          to="/live"
           title="View Live Streams"
           className="flex flex-col items-center text-gray-400 hover:text-white transition"
         >

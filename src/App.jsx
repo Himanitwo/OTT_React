@@ -20,16 +20,20 @@ import VideoCall from "./pages/VideoCall";
 import VideoCallWrapper from "./pages/VideoCallWrapper";
 import JoinRoom from "./pages/joinroom";
 import VoiceChatWithText from "./pages/VideoCall";
+
 // Import the functions you need from the SDKs you need
 import BadgeDashboard from "./pages/badges/BadgeDashboard";
 import WatchPartyRoom from "./pages/WatchParty/WatchPartyRoom";
-import LiveStream from "./pages/LiveStream";
-import Viewer from "./pages/veiwer";
-import StartLive from "./pages/StartLive";
-import LiveLobby from "./pages/LiveLobby";// Corrected: Import ThemeProvider from its path
+import LiveStream from "./pages/livestream/LiveStream"; // Corrected: Import LiveStream from its path
+import Viewer from "./pages/livestream/veiwer"; // Corrected: Import Viewer from its path
+import StartLive from "./pages/livestream/StartLive"; // Corrected: Import StartLive from its path
+import LiveLobby from "./pages/livestream/LiveLobby"; // Corrected: Import Live
+// Corrected: Import ThemeProvider from its path
 import { ThemeProvider } from "./pages/useTheme"; // 
 import SeriesPage from "./pages/seriespage";
 import MoviePage from "./pages/moviep";// Import the MoviePage component
+import reel from "./pages/reels/reel"; // Import the reel component
+import ReelsSidebar from "./pages/reels/reel";
 const App = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
@@ -77,18 +81,20 @@ const App = () => {
                 <Route path="/vediocall" element={<VideoCall />} />
                 <Route path="/badges" element={<BadgeDashboard />} />
                 <Route path="/watch-party/:roomId" element={<WatchPartyRoom />} />
-                        <Route path="/live/host/:roomId" element={<LiveStream />} />
-        <Route path="/live/view/:roomId" element={<Viewer />} />
+                        <Route path="/broadcast/:id" element={<LiveStream />} />
+    <Route path="/watch/:id" element={<Viewer />} />
   <Route path="/series/waris" element={<SeriesPage />} />
   <Route path="/movie/:movieId" element={<MoviePage />} />
-                 <Route path="/start-live" element={<StartLive />} />
+                <Route path="/go-live" element={<StartLive />} />
         <Route path="/live" element={<LiveLobby />} />
+        <Route path="/reels" element={<ReelsSidebar />} />
+                <Route path="/video-call" element={<VideoCallWrapper />} />
               </Routes>
             </main>
           </div>
         </div>
       </Router>
-      {/* <JotformAgent /> */}
+      <JotformAgent />
       </ThemeProvider>
     </>
   );
