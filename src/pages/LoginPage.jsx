@@ -153,13 +153,14 @@ const LoginPage = () => {
           {formError && (
             <p className="text-red-500 text-sm mb-4 text-center">{formError}</p>
           )}
+        <button
+          type="submit"
+          className="w-full py-3 text-white text-xl font-bold rounded-full mb-6 shadow-lg hover:bg-green-600 transition-all duration-200"
+          style={{ backgroundColor: '#15803d' }}
+        >
+          LOGIN
+        </button>
 
-          <button
-            type="submit"
-            className="w-full pt-4 bg-green-600 text-black text-xl font-bold py-2 rounded-full mb-6 hover:bg-green-500 transition"
-          >
-            LOGIN
-          </button>
         </form>
 
         <div className="text-center">

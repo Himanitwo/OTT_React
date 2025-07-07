@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Settings, HelpCircle, PlusCircle, User, LogOut, Search, Edit } from "lucide-react";
+import { Settings, HelpCircle, PlusCircle, User, LogOut } from "lucide-react";
 import AvatarModal from "./AvatarPage";
 import { useTheme } from "../pages/useTheme";
 
@@ -15,12 +15,10 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { theme, setTheme, currentTheme } = useTheme();
 
-  const [searchTerm, setSearchTerm] = useState("");
   const [profile, setProfile] = useState(null);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [hasAvatar, setHasAvatar] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
 
   const auth = getAuth();
 
@@ -33,52 +31,44 @@ const Dashboard = () => {
         navigate("/loginpage");
       }
     });
-
     return () => unsubscribe();
   }, []);
 
-  // src/Dashboard.jsx
-const fetchProfile = async (user) => {
-  setIsLoading(true);
-  try {
-    const token = await user.getIdToken();
-    const response = await fetch(`http://localhost:4000/api/profile/${user.uid}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  const fetchProfile = async (user) => {
+    setIsLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch(`http://localhost:4000/api/profile/${user.uid}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    if (response.ok) {
-      const profile = await response.json(); // Now gets a single profile object
-      
-      setProfile(profile);
-      setHasAvatar(profile.avatarCustomized); // Direct boolean check
-      
-      if (profile.theme) setTheme(profile.theme);
-      
-      // Show modal only if avatar not customized
-      if (!profile.avatarCustomized) {
+      if (response.ok) {
+        const profile = await response.json();
+        setProfile(profile);
+        setHasAvatar(profile.avatarCustomized);
+        if (profile.theme) setTheme(profile.theme);
+        if (!profile.avatarCustomized) setShowAvatarModal(true);
+      } else if (response.status === 404) {
+        setProfile({ uid: user.uid });
+        setHasAvatar(false);
         setShowAvatarModal(true);
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    } else if (response.status === 404) {
-      setProfile({ uid: user.uid });
-      setHasAvatar(false);
-      setShowAvatarModal(true);
-    } else {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    } catch (err) {
+      console.error("Error fetching profile:", err);
+    } finally {
+      setIsLoading(false);
     }
-  } catch (err) {
-    console.error("Error fetching profile:", err);
-  } finally {
-    setIsLoading(false);
-  }
-};
-  // Update theme in DB
+  };
+
   const updateThemeInDB = async (newTheme) => {
     const user = auth.currentUser;
     if (!user) return;
 
     try {
       const token = await user.getIdToken();
-      await fetch(`http://localhost:4001/api/profile/${user.uid}`, {
+      await fetch(`http://localhost:4000/api/profile/${user.uid}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -92,33 +82,21 @@ const fetchProfile = async (user) => {
     }
   };
 
-  // ... rest of the code remains the same ...
-
-  // Handle avatar save
- const handleAvatarSave = (savedProfile) => {
-  console.log("👤 Avatar saved:", savedProfile);
+  const handleAvatarSave = (savedProfile) => {
     const fullProfile = {
-    ...profile,
-    ...savedProfile,
-    avatarCustomized: true
+      ...profile,
+      ...savedProfile,
+      avatarCustomized: true,
+    };
+    setProfile(fullProfile);
+    setHasAvatar(true);
+    setShowAvatarModal(false);
   };
-  
-  setProfile(fullProfile);
-  setHasAvatar(true);
-  setShowAvatarModal(false);
-};
-  //URL generator
-  const getAvatarUrl = (profile) => {
-  if (!profile) return "";
-  
-  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${profile.seed}&skinColor=${profile.skinColor}&hair=${profile.hair || 'long01'}&eyes=${profile.eyes || 'variant01'}&mouth=${profile.mouth || 'variant01'}&size=150`;
-};
 
-  // Static data
-  const rentedMovies = [
-    { title: "Harishchandrachi Factory", img: "https://upload.wikimedia.org/wikipedia/en/9/9c/Harishchandrachi_Factory%2C_2009_film_poster.jpg" },
-    { title: "Natarang", img: "https://upload.wikimedia.org/wikipedia/en/7/75/Natarang_%28film%29.jpg" }
-  ];
+  const getAvatarUrl = (profile) => {
+    if (!profile) return "";
+    return `https://api.dicebear.com/9.x/adventurer/svg?seed=${profile.seed}&skinColor=${profile.skinColor}&hair=${profile.hair || "long01"}&eyes=${profile.eyes || "variant01"}&mouth=${profile.mouth || "variant01"}&size=150`;
+  };
 
   const watchlistItems = [
     {
@@ -128,7 +106,6 @@ const fetchProfile = async (user) => {
     },
   ];
 
-  // Event handlers
   const handleSubscribeClick = () => navigate("/subscription");
   const handleSettingsClick = () => navigate("/setting");
   const handleLogout = () => {
@@ -136,99 +113,118 @@ const fetchProfile = async (user) => {
     navigate("/loginpage");
   };
 
-  const filteredMovies = rentedMovies.filter((movie) =>
-    movie.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div
       className={`bg-gradient-to-b ${theme.background} min-h-screen p-6 ${theme.text} font-['Poppins']`}
-      style={theme.backgroundImage ? {
-        backgroundImage: theme.backgroundImage,
-        backgroundSize: 'cover',
-        backgroundRepeat: 'no-repeat'
-      } : {}}
+      style={
+        theme.backgroundImage
+          ? {
+              backgroundImage: theme.backgroundImage,
+              backgroundSize: "cover",
+              backgroundRepeat: "no-repeat",
+            }
+          : {}
+      }
     >
-      {/* Header */}
-      <motion.header
-        className={`flex justify-between items-center border border-${theme.text}/30 bg-${theme.accent}/30 backdrop-blur-xl px-8 py-5 rounded-3xl shadow-2xl ${theme.shadowin}`}
+      {/* Top Controls Section (Styled like Profile) */}
+      <motion.section
+        className={`mt-4 border border-${theme.text}/20 rounded-2xl shadow-md bg-${theme.accent}/30 backdrop-blur-md px-6 py-8 max-w-5xl mx-auto ${theme.shadowin}`}
         variants={fadeIn}
         initial="hidden"
         animate="show"
       >
-        <div>
-          <p className="text-xs text-[#80cbc4] tracking-wide">📞 +91 8********1</p>
-          <h1 className="text-2xl md:text-3xl font-bold mt-1 drop-shadow tracking-tight">
-            Subscribe to enjoy Marathi play 🎭
-          </h1>
-        </div>
-        <div className="flex gap-3">
-          <button onClick={handleSubscribeClick} className="bg-gradient-to-r from-red-500 via-red-400 to-red-500 hover:scale-105 hover:brightness-110 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200">
-            <PlusCircle size={16} /> Subscribe
-          </button>
-          <button onClick={handleSettingsClick} className="bg-gradient-to-r from-yellow-300 via-yellow-200 to-yellow-300 hover:scale-105 hover:brightness-110 text-black px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200">
-            <Settings size={16} /> Settings
-          </button>
-          <button onClick={handleLogout} className="bg-gradient-to-r from-slate-600 via-slate-500 to-slate-600 hover:scale-105 hover:brightness-110 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 transition-all duration-200">
-            <LogOut size={16} /> Logout
-          </button>
-          <select
-            value={currentTheme}
-            onChange={(e) => updateThemeInDB(e.target.value)}
-            className="bg-white text-black px-2 py-1 rounded"
-          >
-            <option value="dark">Dark</option>
-            <option value="cherryBlossom">Cherry Blossom</option>
-            <option value="techno">Techno</option>
-          </select>
-        </div>
-      </motion.header>
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-6">
+          <div className="flex gap-4 flex-wrap justify-center md:justify-start">
+            <button
+              onClick={handleSubscribeClick}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 via-red-400 to-red-500 text-white rounded-xl shadow hover:scale-105 transition"
+            >
+              <PlusCircle size={20} /> Subscribe
+            </button>
+            <button
+              onClick={handleSettingsClick}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-300 via-yellow-200 to-yellow-300 text-black rounded-xl shadow hover:scale-105 transition"
+            >
+              <Settings size={20} /> Settings
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-slate-700 to-slate-600 text-white rounded-xl shadow hover:scale-105 transition"
+            >
+              <LogOut size={20} /> Logout
+            </button>
+          </div>
 
-      {/* Search */}
-      <motion.div className="mt-8 relative max-w-lg mx-auto" variants={fadeIn} initial="hidden" animate="show">
-        <input
-          type="text"
-          placeholder="Search movies..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className={`w-full p-3 pl-10 rounded-xl bg-gray-800 bg-opacity-70 border border-${theme.text}/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-${theme.accent}`}
-        />
-        <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-      </motion.div>
-
-      {/* Profile */}
-      <motion.section className={`mt-12 border-t border-${theme.text}/20 pt-8`} variants={fadeIn} initial="hidden" animate="show">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold tracking-wide">Your Profile</h2>
-          
+          <div className="flex items-center gap-4 bg-white text-black p-4 rounded-xl shadow w-full md:w-auto">
+            <label htmlFor="theme-select" className="font-semibold text-sm">
+              Theme:
+            </label>
+            <select
+              id="theme-select"
+              value={currentTheme}
+              onChange={(e) => updateThemeInDB(e.target.value)}
+              className="px-3 py-1.5 rounded-md border text-sm"
+            >
+              <option value="dark">Dark</option>
+              <option value="cherryBlossom">Cherry Blossom</option>
+              <option value="techno">Techno</option>
+              <option value="ocean">Ocean</option>
+              <option value="sunset">Sunset</option>
+            </select>
+          </div>
         </div>
+      </motion.section>
+
+      {/* Profile Section */}
+      <motion.section
+        className={`mt-12 border-t border-${theme.text}/20 pt-8`}
+        variants={fadeIn}
+        initial="hidden"
+        animate="show"
+      >
+        <h2 className="text-2xl font-semibold mb-6 tracking-wide text-center">Your Profile</h2>
         {isLoading ? (
           <div className="text-center py-8">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
           </div>
-        ) : hasAvatar ? (
-              <div className="flex justify-center">
-                <motion.div whileHover={{ scale: 1.12, rotate: 1 }} className="flex flex-col items-center cursor-pointer transition-all" onClick={() => setShowAvatarModal(true)}>
-                  <img
-                    src={getAvatarUrl(profile)}
-                    alt="User Avatar"
-                    className="w-24 h-24 rounded-full border-4 border-white shadow-lg"
-                  />
-                  <p className="mt-3 text-lg font-medium">{profile.displayName || "Your Profile"}</p>
-                </motion.div>
-              </div>
-            )  : (
-          <div className="text-center">
-            <p className="text-gray-400 mb-4">You haven't created an avatar yet</p>
-            <button onClick={() => setShowAvatarModal(true)} className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-md flex items-center gap-2 mx-auto transition-all">
-              <PlusCircle size={16} /> Create Avatar
-            </button>
+        ) : (
+          <div className="flex justify-center">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className={`p-6 rounded-2xl shadow-lg border border-${theme.text}/10 bg-${theme.accent}/40 backdrop-blur-md text-center transition-all max-w-md w-full cursor-pointer`}
+              onClick={() => !hasAvatar && setShowAvatarModal(true)}
+            >
+              <img
+                src={getAvatarUrl(profile)}
+                alt="User Avatar"
+                className="w-36 h-36 rounded-full mx-auto border-4 border-white shadow-md"
+              />
+              <h3 className="mt-4 text-xl font-semibold">{profile?.displayName || "Your Profile"}</h3>
+              {!hasAvatar && (
+                <>
+                  <p className="text-sm mt-2 text-gray-400">
+                    You haven't created an avatar yet
+                  </p>
+                  <button
+                    onClick={() => setShowAvatarModal(true)}
+                    className="mt-4 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md transition"
+                  >
+                    <PlusCircle size={16} className="inline mr-1" /> Create Avatar
+                  </button>
+                </>
+              )}
+            </motion.div>
           </div>
         )}
       </motion.section>
 
-      {/* Watchlist */}
-      <motion.section className={`mt-12 border-t border-${theme.text}/20 pt-8`} variants={fadeIn} initial="hidden" animate="show">
+      {/* Watchlist Section */}
+      <motion.section
+        className={`mt-12 border-t border-${theme.text}/20 pt-8`}
+        variants={fadeIn}
+        initial="hidden"
+        animate="show"
+      >
         <h2 className="text-2xl font-semibold mb-6 tracking-wide">Watchlist</h2>
         <div className="space-y-4">
           {watchlistItems.map((item, index) => (
@@ -248,8 +244,13 @@ const fetchProfile = async (user) => {
         </div>
       </motion.section>
 
-      {/* Watch History */}
-      <motion.section className={`mt-12 border-t border-${theme.text}/20 pt-8`} variants={fadeIn} initial="hidden" animate="show">
+      {/* Watch History Section */}
+      <motion.section
+        className={`mt-12 border-t border-${theme.text} pt-8`}
+        variants={fadeIn}
+        initial="hidden"
+        animate="show"
+      >
         <h2 className="text-2xl font-semibold mb-6 tracking-wide">Watch History</h2>
         <Link to="/watchhistory">
           <motion.div
@@ -258,7 +259,7 @@ const fetchProfile = async (user) => {
           >
             <HelpCircle size={24} className="text-[#80cbc4]" />
             <div>
-              <h3 className="font-semibold text-base">Watch History</h3>
+              <h3 className={`font-semibold text-base`}>Watch History</h3>
               <p className="mt-1 text-sm text-[#80cbc4]">View what you watched earlier</p>
             </div>
           </motion.div>

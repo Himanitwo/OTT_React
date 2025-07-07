@@ -23,6 +23,25 @@ export const themes = {
     shadowin: "shadow-cyan-800/30",
     // backgroundImage:`url('/img/techbg.jpg')`, // sample techno bg
   },
+   ocean: {
+    background: "from-cyan-200 to-blue-300",
+    text: "text-blue-900",
+    accent: "bg-cyan-100",
+    card: "bg-white/90 border border-cyan-300 text-blue-800",
+    button: "bg-cyan-500 text-white hover:bg-cyan-600",
+    shadow: "shadow-md",
+    shadowin: "shadow-inner",
+  },
+
+  sunset: {
+    background: "from-orange-300 to-purple-300",
+    text: "text-purple-900",
+    accent: "bg-orange-200",
+    card: "bg-white/80 border border-purple-300 text-orange-900",
+    button: "bg-orange-400 text-white hover:bg-orange-500",
+    shadow: "shadow-lg",
+    shadowin: "shadow-inner",
+  },
 };
 
 

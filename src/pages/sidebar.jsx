@@ -66,12 +66,12 @@ const Sidebar = ({ isExpanded, setIsExpanded }) => {
       <div className="h-full flex flex-col px-3 pt-20 pb-4">
         <ul className="space-y-4 font-medium flex-1">
           <SidebarItem to="/" Icon={FaHome} label="Homepage" isExpanded={isExpanded} />
-          {/* <SidebarItem to="/explore" Icon={FaCompass} label="Explore" isExpanded={isExpanded} />
+          <SidebarItem to="/explore" Icon={FaCompass} label="Explore" isExpanded={isExpanded} />
           <SidebarItem to="/setting" Icon={FaCog} label="Settings" isExpanded={isExpanded} />
           <SidebarItem to="/subscription" Icon={FaBell} label="Subscribe" isExpanded={isExpanded} />
-          <SidebarItem to="/contact" Icon={FaPhone} label="Contact us" isExpanded={isExpanded} /> */}
+          <SidebarItem to="/contact" Icon={FaPhone} label="Contact us" isExpanded={isExpanded} />
           <SidebarItem to="/join" Icon={FaFacebookMessenger} label="Video Call" isExpanded={isExpanded} />
-
+          <SidebarItem to="/reels" Icon={FaFacebookMessenger} label="reel" isExpanded={isExpanded} />
           {user && (
             <>
               {/* <SidebarItem to="/dashboard" Icon={FaTachometerAlt} label="Dashboard" isExpanded={isExpanded} /> */}
