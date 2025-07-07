@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   FiHeart, FiMessageSquare, FiShare2, FiPlus, 
-  FiX, FiSend, FiPause, FiPlay, FiUser 
+  FiX, FiSend, FiPause, FiPlay, FiUser, FiHome 
 } from 'react-icons/fi';
-import { initializeApp } from 'firebase/app';
 import { 
   getAuth, 
   onAuthStateChanged, 
@@ -12,7 +11,6 @@ import {
   signOut 
 } from 'firebase/auth';
 import { 
-  getFirestore, 
   collection, 
   addDoc, 
   query, 
@@ -25,8 +23,6 @@ import {
   serverTimestamp,
   increment
 } from 'firebase/firestore';
-
-// Firebase configuration (without Storage)
 import { auth, db } from '../../firebase';
 
 const ReelsApp = () => {
@@ -48,20 +44,7 @@ const ReelsApp = () => {
   const videoRefs = useRef([]);
   const containerRef = useRef(null);
 
-  // Simulate saving files locally (in a real app, replace with actual file upload to your server)
-  const saveFileLocally = async (file) => {
-    return new Promise((resolve) => {
-      // In production, you would upload to your server here
-      // For this demo, we'll use a blob URL that only exists in memory
-      const videoUrl = URL.createObjectURL(file);
-      resolve({
-        videoUrl,
-        thumbnailUrl: 'https://via.placeholder.com/300x500?text=Video+Thumbnail'
-      });
-    });
-  };
-
-  // Backend API functions using Firestore and local file references
+  // Backend API functions using Firestore
   const backendAPI = {
     getReels: async (userId) => {
       const q = query(collection(db, 'reels'), orderBy('createdAt', 'desc'));
@@ -80,8 +63,20 @@ const ReelsApp = () => {
 
     uploadReel: async (file, caption, user) => {
       try {
-        // Save file reference locally
-        const { videoUrl, thumbnailUrl } = await saveFileLocally(file);
+        // Upload file to server
+        const formData = new FormData();
+        formData.append('video', file);
+        
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to upload video');
+        }
+        
+        const { videoUrl, thumbnailUrl } = await response.json();
         
         // Save reel data to Firestore
         const reelData = {
@@ -388,52 +383,10 @@ const ReelsApp = () => {
   // Main app UI
   return (
     <div className="relative h-screen bg-gray-900 overflow-hidden">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-10 bg-gray-900 bg-opacity-90 backdrop-blur-sm p-4 flex justify-between items-center border-b border-gray-800">
-        <h1 className="text-xl font-bold text-white">ReelShare</h1>
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => setShowUploadModal(true)}
-            className="text-white p-2 rounded-full hover:bg-gray-800 transition-colors"
-            aria-label="Upload new reel"
-          >
-            <FiPlus size={24} />
-          </button>
-          <div className="relative group">
-            <button 
-              onClick={handleLogout}
-              className="flex items-center gap-2 text-white"
-              aria-label="User profile"
-            >
-              {user.photoURL ? (
-                <img 
-                  src={user.photoURL} 
-                  alt={user.displayName} 
-                  className="w-8 h-8 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
-                  <FiUser size={16} />
-                </div>
-              )}
-              <span className="hidden md:inline">{user.displayName || 'User'}</span>
-            </button>
-            <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 hidden group-hover:block z-20">
-              <button
-                onClick={handleLogout}
-                className="block w-full text-left px-4 py-2 text-white hover:bg-gray-700"
-              >
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Reels Feed */}
       <div 
         ref={containerRef}
-        className="h-full pt-16 pb-24 overflow-y-auto snap-y snap-mandatory scroll-smooth"
+        className="h-full pb-20 overflow-y-auto snap-y snap-mandatory scroll-smooth"
       >
         {loading ? (
           <div className="h-full flex items-center justify-center">
@@ -453,10 +406,10 @@ const ReelsApp = () => {
           reels.map((reel, index) => (
             <div 
               key={reel.id} 
-              className="h-full w-full snap-start relative flex justify-center"
+              className="h-full w-full snap-start relative flex justify-center items-center bg-black"
             >
               {/* Video Player */}
-              <div className="relative h-full w-full max-w-md">
+              <div className="relative h-full w-full max-w-[400px] flex items-center justify-center">
                 <video
                   ref={el => videoRefs.current[index] = el}
                   src={reel.videoUrl}
@@ -464,7 +417,7 @@ const ReelsApp = () => {
                   loop
                   muted
                   playsInline
-                  className="h-full w-full object-cover"
+                  className="h-full max-h-[90vh] w-full object-contain"
                   onClick={(e) => {
                     if (e.target.paused) {
                       e.target.play().catch(err => console.log('Play failed:', err));
@@ -497,8 +450,8 @@ const ReelsApp = () => {
                   )}
                 </button>
                 
-                {/* Video Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
+                {/* Video Info */}
+                <div className="absolute bottom-20 left-0 right-0 p-4">
                   <div className="flex items-start gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
@@ -524,54 +477,54 @@ const ReelsApp = () => {
                         </p>
                       )}
                     </div>
-                    
-                    {/* Right side actions */}
-                    <div className="flex flex-col items-center gap-4">
-                      <button 
-                        onClick={() => handleLike(reel.id)}
-                        className="flex flex-col items-center group"
-                        aria-label="Like"
-                      >
-                        <FiHeart 
-                          size={24} 
-                          className={`${reel.isLiked ? 'text-red-500 fill-red-500' : 'text-white'} group-hover:scale-110 transition-transform`} 
-                        />
-                        <span className="text-white text-xs">{reel.likes || 0}</span>
-                      </button>
-                      
-                      <button 
-                        onClick={() => toggleComments(reel.id)}
-                        className="flex flex-col items-center group"
-                        aria-label="Comments"
-                      >
-                        <FiMessageSquare 
-                          size={24} 
-                          className="text-white group-hover:scale-110 transition-transform" 
-                        />
-                        <span className="text-white text-xs">{reel.comments?.length || 0}</span>
-                      </button>
-                      
-                      <button 
-                        className="flex flex-col items-center group"
-                        aria-label="Share"
-                      >
-                        <FiShare2 
-                          size={24} 
-                          className="text-white group-hover:scale-110 transition-transform" 
-                        />
-                      </button>
-
-                      {user.uid === reel.user?.uid && (
-                        <button 
-                          onClick={() => handleDelete(reel.id)}
-                          className="text-red-500 text-xs mt-2 hover:underline"
-                          aria-label="Delete reel"
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
                   </div>
+                </div>
+                
+                {/* Right side actions */}
+                <div className="absolute right-4 bottom-20 flex flex-col items-center gap-5">
+                  <button 
+                    onClick={() => handleLike(reel.id)}
+                    className="flex flex-col items-center group"
+                    aria-label="Like"
+                  >
+                    <FiHeart 
+                      size={28} 
+                      className={`${reel.isLiked ? 'text-red-500 fill-red-500' : 'text-white'} group-hover:scale-110 transition-transform`} 
+                    />
+                    <span className="text-white text-sm">{reel.likes || 0}</span>
+                  </button>
+                  
+                  <button 
+                    onClick={() => toggleComments(reel.id)}
+                    className="flex flex-col items-center group"
+                    aria-label="Comments"
+                  >
+                    <FiMessageSquare 
+                      size={28} 
+                      className="text-white group-hover:scale-110 transition-transform" 
+                    />
+                    <span className="text-white text-sm">{reel.comments?.length || 0}</span>
+                  </button>
+                  
+                  <button 
+                    className="flex flex-col items-center group"
+                    aria-label="Share"
+                  >
+                    <FiShare2 
+                      size={28} 
+                      className="text-white group-hover:scale-110 transition-transform" 
+                    />
+                  </button>
+
+                  {user.uid === reel.user?.uid && (
+                    <button 
+                      onClick={() => handleDelete(reel.id)}
+                      className="text-red-500 text-xs mt-2 hover:underline"
+                      aria-label="Delete reel"
+                    >
+                      Delete
+                    </button>
+                  )}
                 </div>
                 
                 {/* Comments Section */}
@@ -650,6 +603,51 @@ const ReelsApp = () => {
             </div>
           ))
         )}
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 z-10 bg-gray-900 bg-opacity-90 backdrop-blur-sm p-3 flex justify-around items-center border-t border-gray-800">
+        <button 
+          className="text-white p-2 rounded-full hover:bg-gray-800 transition-colors"
+          aria-label="Home"
+        >
+          <FiHome size={24} />
+        </button>
+        
+        <button 
+          onClick={() => setShowUploadModal(true)}
+          className="text-white p-2 rounded-full hover:bg-gray-800 transition-colors"
+          aria-label="Upload new reel"
+        >
+          <FiPlus size={24} />
+        </button>
+        
+        <div className="relative group">
+          <button 
+            className="flex items-center gap-2 text-white p-1"
+            aria-label="User profile"
+          >
+            {user.photoURL ? (
+              <img 
+                src={user.photoURL} 
+                alt={user.displayName} 
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
+                <FiUser size={16} />
+              </div>
+            )}
+          </button>
+          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 hidden group-hover:block z-20">
+            <button
+              onClick={handleLogout}
+              className="block w-full text-left px-4 py-2 text-white hover:bg-gray-700"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Upload Modal */}
@@ -744,7 +742,7 @@ const ReelsApp = () => {
 
       {/* Error Toast */}
       {error && (
-        <div className="fixed bottom-4 left-4 right-4 max-w-md mx-auto bg-red-600 text-white p-3 rounded-lg shadow-lg flex justify-between items-center z-30 animate-fade-in">
+        <div className="fixed bottom-20 left-4 right-4 max-w-md mx-auto bg-red-600 text-white p-3 rounded-lg shadow-lg flex justify-between items-center z-30 animate-fade-in">
           <p>{error}</p>
           <button 
             onClick={() => setError(null)}
