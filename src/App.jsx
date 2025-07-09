@@ -33,6 +33,8 @@ import { ThemeProvider } from "./pages/useTheme"; //
 import SeriesPage from "./pages/seriespage";
 import MoviePage from "./pages/moviep";// Import the MoviePage component
 import ReelsSidebar from "./pages/reels/reel";
+import { PlaylistProvider } from './pages/PlaylistContext';
+
 const App = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
@@ -40,6 +42,7 @@ const App = () => {
     <>
       {/* ThemeProvider must wrap the content that uses the theme, typically the entire app */}
       <ThemeProvider>
+        <PlaylistProvider>
         <Router>
           <div className="flex flex-col h-screen">
             {/* Navbar at top */}
@@ -88,12 +91,14 @@ const App = () => {
                 <Route path="/live" element={<LiveLobby />} />
                 <Route path="/reels" element={<ReelsSidebar />} />
                 <Route path="/video-call" element={<VideoCallWrapper />} />
+                <Route path="/moviedetail/:id" element={<MovieDetailPage />} />
               </Routes>
             </main>
           </div>
         </div>
       </Router>
       <JotformAgent />
+      </PlaylistProvider>
       </ThemeProvider>
     </>
   );

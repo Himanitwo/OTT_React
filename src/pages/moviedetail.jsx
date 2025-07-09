@@ -4,56 +4,55 @@ import { motion } from 'framer-motion';
 import {
   CalendarDays, Clock, Star, Film, User, Plus, Share2, ThumbsUp, ThumbsDown
 } from 'lucide-react';
+import { useTheme } from './useTheme';
+import { usePlaylist } from './PlaylistContext';
 
 const allMovies = [...newReleases, ...recommendations, ...popularMovies];
 
 function MovieDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const { playlists, addToPlaylist } = usePlaylist();
+
   const movie = allMovies.find(m => m.id.toString() === id);
 
   if (!movie) {
-    return <div className="text-white p-10">Movie not found</div>;
+    return <p className={`p-10 ${theme.text}`}>Movie not found</p>;
   }
 
   const dummyCast = ['Martin Freeman', 'Ian McKellen', 'Richard Armitage', 'Cate Blanchett'];
   const director = 'Peter Jackson';
 
   return (
-    <div className="bg-black text-white min-h-screen px-6 py-12">
+    <div className={`min-h-screen px-6 py-12 ${theme.background}`}>
       <motion.div
         className="max-w-6xl w-full mx-auto"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        {/* Oscar nomination badge */}
-        <div className="bg-yellow-500 text-black px-3 py-1 rounded-full text-xs font-bold inline-flex items-center mb-4">
-          OSCAR<span className="text-white">S</span> 3X nominee
-        </div>
+        <p className="bg-yellow-500 text-black px-3 py-1 rounded-full text-xs font-bold inline-flex items-center mb-4">
+          OSCAR<span className={`${theme.text}`}></span> 3X nominee
+        </p>
 
-        {/* Movie title */}
-        <h1 className="text-4xl font-bold mb-2">{movie.title}</h1>
+        <p className={`text-4xl font-bold mb-2 ${theme.text}`}>{movie.title}</p>
 
-        {/* Action buttons row */}
+        {/* Action Buttons */}
         <div className="flex items-center gap-6 mb-8">
-          <div className="text-gray-400 text-sm">HOW do I watch this?</div>
+          <p className="text-gray-400 text-sm">HOW do I watch this?</p>
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-1 text-sm hover:text-white transition">
-              <Film size={16} /> Trailer
-            </button>
-            <button className="flex items-center gap-1 text-sm hover:text-white transition">
-              <Plus size={16} /> Watchlist
-            </button>
-            <button className="flex items-center gap-1 text-sm hover:text-white transition">
-              <ThumbsUp size={16} /> Like
-            </button>
-            <button className="flex items-center gap-1 text-sm hover:text-white transition">
-              <ThumbsDown size={16} /> Not for me
-            </button>
-            <button className="flex items-center gap-1 text-sm hover:text-white transition">
-              <Share2 size={16} /> Share
-            </button>
+            {[
+              { icon: <Film size={16} />, label: 'Trailer' },
+              { icon: <Plus size={16} />, label: 'Watchlist' },
+              { icon: <ThumbsUp size={16} />, label: 'Like' },
+              { icon: <ThumbsDown size={16} />, label: 'Not for me' },
+              { icon: <Share2 size={16} />, label: 'Share' },
+            ].map((btn, idx) => (
+              <button key={idx} className={`flex items-center gap-1 text-sm hover:text-white transition ${theme.text}`}>
+                {btn.icon} {btn.label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -68,15 +67,13 @@ function MovieDetailPage() {
             transition={{ duration: 0.6 }}
           />
 
-          {/* Info */}
+          {/* Info Section */}
           <div>
-            {/* Description */}
-            <p className="text-gray-300 mb-6 leading-relaxed">{movie.description}</p>
+            <p className={`${theme.text} mb-6 leading-relaxed`}>{movie.description}</p>
 
-            {/* Tags */}
-            <div className="flex flex-wrap gap-2 mb-6">
-              {['Ambitious', 'Exciting', 'Thoughtful', 'Fantasy', 'Adventure'].map((tag) => (
-                <span key={tag} className="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-sm">
+            <div className={`flex flex-wrap gap-2 mb-6 ${theme.text} `}>
+              {['Ambitious', 'Exciting', 'Thoughtful', 'Fantasy', 'Adventure'].map(tag => (
+                <span key={tag} className={`px-3 py-1 rounded-full text-sm ${theme.button}`}>
                   {tag}
                 </span>
               ))}
@@ -84,32 +81,54 @@ function MovieDetailPage() {
 
             {/* Metadata */}
             <div className="flex flex-wrap items-center gap-4 text-gray-400 text-sm mb-6">
-              <div className="flex items-center gap-1"><CalendarDays size={16} /> {movie.year}</div>
-              <div className="flex items-center gap-1"><Clock size={16} /> {movie.duration}</div>
-              <div className="flex items-center gap-1"><Star size={16} className="text-yellow-400" /> PG-13</div>
-              <div className="flex items-center gap-1"><Film size={16} /> {movie.genre}</div>
+              <p className={`flex items-center gap-1 ${theme.text}`}><CalendarDays size={16} /> {movie.year}</p>
+              <p className={`flex items-center gap-1 ${theme.text}`}><Clock size={16} /> {movie.duration}</p>
+              <p className={`flex items-center gap-1 ${theme.text}`}><Star size={16} className="text-yellow-400" /> PG-13</p>
+              <p className={`flex items-center gap-1 ${theme.text}`}><Film size={16} /> {movie.genre}</p>
             </div>
 
             {/* Cast */}
             <div className="mb-4">
-              <h3 className="text-white font-semibold flex items-center gap-2 mb-1"><User size={16} /> Cast</h3>
-              <p className="text-gray-400">{dummyCast.join(', ')}</p>
+              <p className={`font-semibold flex items-center gap-2 mb-1 ${theme.text}`}>
+                <User size={16} /> Cast
+              </p>
+              <p className={`${theme.text}`}>{dummyCast.join(', ')}</p>
             </div>
 
             {/* Director */}
             <div className="mb-8">
-              <h3 className="text-white font-semibold">Director</h3>
-              <p className="text-gray-400">{director}</p>
+              <p className={`font-semibold ${theme.text}`}>Director</p>
+              <p className={`font-semibold ${theme.sectionTitle}`}>{director}</p>
             </div>
 
-            {/* Primary action button */}
+            {/* Watch Now */}
             <motion.button
               onClick={() => navigate(`/watch/${movie.id}`)}
               whileHover={{ scale: 1.05 }}
-              className="bg-green-600 hover:bg-green-700 transition px-6 py-3 rounded-lg font-semibold text-lg w-full"
-            >
-              ▶️ Watch Now
+              className={`${theme.button} ${theme.text} transition px-6 py-3 rounded-lg font-semibold text-lg w-full`}
+            > ▶️ Watch Now
             </motion.button>
+
+            {/* Playlist Dropdown */}
+            {playlists.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <label className="block text-sm text-gray-400">Add to Playlist:</label>
+                <select
+                  className={`px-4 py-2 rounded w-full ${theme.card} ${theme.text}`}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      addToPlaylist(e.target.value, movie);
+                      e.target.value = '';
+                    }
+                  }}
+                >
+                  <option value="">Select Playlist</option>
+                  {playlists.map((p) => (
+                    <option key={p.name} value={p.name}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         </div>
       </motion.div>
