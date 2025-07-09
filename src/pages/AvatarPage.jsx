@@ -67,7 +67,7 @@ const AvatarModal = ({ currentProfile = {}, onSave, onClose }) => {
         avatarCustomized: true,
       };
 
-      const response = await fetch(`http://localhost:4001/api/profile/${user.uid}`, {
+      const response = await fetch(`http://localhost:4000/api/profile/${user.uid}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
