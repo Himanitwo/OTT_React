@@ -34,6 +34,8 @@ import SeriesPage from "./pages/seriespage";
 import MoviePage from "./pages/moviep";// Import the MoviePage component
 import reel from "./pages/reels/reel"; // Import the reel component
 import ReelsSidebar from "./pages/reels/reel";
+import { PlaylistProvider } from './pages/PlaylistContext';
+
 const App = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
@@ -41,6 +43,7 @@ const App = () => {
     <>
       {/* ThemeProvider must wrap the content that uses the theme, typically the entire app */}
       <ThemeProvider>
+        <PlaylistProvider>
         <Router>
           <div className="flex flex-col h-screen">
             {/* Navbar at top */}
@@ -76,25 +79,27 @@ const App = () => {
                 <Route path="/series/:id" element={<SeriesDetailPage />} /> 
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/vediocall" element={<VoiceChatWithText />} />
-                            <Route path="/join" element={<JoinRoom />} />
-            <Route path="/room/:roomId" element={<VoiceChatWithText />} />
+                <Route path="/join" element={<JoinRoom />} />
+                <Route path="/room/:roomId" element={<VoiceChatWithText />} />
                 <Route path="/vediocall" element={<VideoCall />} />
                 <Route path="/badges" element={<BadgeDashboard />} />
                 <Route path="/watch-party/:roomId" element={<WatchPartyRoom />} />
-                        <Route path="/broadcast/:id" element={<LiveStream />} />
-    <Route path="/watch/:id" element={<Viewer />} />
-  <Route path="/series/waris" element={<SeriesPage />} />
-  <Route path="/movie/:movieId" element={<MoviePage />} />
+                <Route path="/broadcast/:id" element={<LiveStream />} />
+                <Route path="/watch/:id" element={<Viewer />} />
+                <Route path="/series/waris" element={<SeriesPage />} />
+                <Route path="/movie/:movieId" element={<MoviePage />} />
                 <Route path="/go-live" element={<StartLive />} />
-        <Route path="/live" element={<LiveLobby />} />
-        <Route path="/reels" element={<ReelsSidebar />} />
+                <Route path="/live" element={<LiveLobby />} />
+                <Route path="/reels" element={<ReelsSidebar />} />
                 <Route path="/video-call" element={<VideoCallWrapper />} />
+                <Route path="/moviedetail/:id" element={<MovieDetailPage />} />
               </Routes>
             </main>
           </div>
         </div>
       </Router>
       <JotformAgent />
+      </PlaylistProvider>
       </ThemeProvider>
     </>
   );
