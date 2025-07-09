@@ -32,7 +32,6 @@ import LiveLobby from "./pages/livestream/LiveLobby"; // Corrected: Import Live
 import { ThemeProvider } from "./pages/useTheme"; // 
 import SeriesPage from "./pages/seriespage";
 import MoviePage from "./pages/moviep";// Import the MoviePage component
-import reel from "./pages/reels/reel"; // Import the reel component
 import ReelsSidebar from "./pages/reels/reel";
 const App = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
@@ -63,10 +62,10 @@ const App = () => {
             >
               <Routes>
                 <Route path="/" element={<Homepage />} />
-                {/* <Route path="/explore" element={<Explore />} />
-                <Route path="/setting" element={<SettingsPage />} /> */}
+                <Route path="/explore" element={<Explore />} />
+                <Route path="/setting" element={<SettingsPage />} />
                 <Route path="/loginpage" element={<LoginPage />} />
-                {/* <Route path="/movie/:id" element={<MovieDetailPage />} /> Dynamic route for movie details */}
+                <Route path="/movie/:id" element={<MovieDetailPage />} /> Dynamic route for movie details
                 <Route path="/watch/:id" element={<WatchPage />}/>
                 <Route path="/subscription" element={<SubscriptionPage />}/>
                 <Route path="/watchlist" element={<WatchlistPage />}/>
@@ -76,18 +75,18 @@ const App = () => {
                 <Route path="/series/:id" element={<SeriesDetailPage />} /> 
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/vediocall" element={<VoiceChatWithText />} />
-                            <Route path="/join" element={<JoinRoom />} />
-            <Route path="/room/:roomId" element={<VoiceChatWithText />} />
+                <Route path="/join" element={<JoinRoom />} />
+                <Route path="/room/:roomId" element={<VoiceChatWithText />} />
                 <Route path="/vediocall" element={<VideoCall />} />
                 <Route path="/badges" element={<BadgeDashboard />} />
                 <Route path="/watch-party/:roomId" element={<WatchPartyRoom />} />
-                        <Route path="/broadcast/:id" element={<LiveStream />} />
-    <Route path="/watch/:id" element={<Viewer />} />
-  <Route path="/series/waris" element={<SeriesPage />} />
-  <Route path="/movie/:movieId" element={<MoviePage />} />
+                <Route path="/broadcast/:id" element={<LiveStream />} />
+                <Route path="/watch/:id" element={<Viewer />} />
+                <Route path="/series/waris" element={<SeriesPage />} />
+                <Route path="/movie/:movieId" element={<MoviePage />} />
                 <Route path="/go-live" element={<StartLive />} />
-        <Route path="/live" element={<LiveLobby />} />
-        <Route path="/reels" element={<ReelsSidebar />} />
+                <Route path="/live" element={<LiveLobby />} />
+                <Route path="/reels" element={<ReelsSidebar />} />
                 <Route path="/video-call" element={<VideoCallWrapper />} />
               </Routes>
             </main>
