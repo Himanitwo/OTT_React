@@ -1,25 +1,37 @@
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getAuth } from "firebase/auth";
+// src/firebase.js
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getAnalytics } from 'firebase/analytics';
+import { getStorage } from 'firebase/storage';
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDa6dT-xfaCdnMPPMbTd4yI80v6JqRewU4",
   authDomain: "ott-platform-5bb8a.firebaseapp.com",
   projectId: "ott-platform-5bb8a",
-  storageBucket: "ott-platform-5bb8a.firebasestorage.app",
+  storageBucket: "ott-platform-5bb8a.appspot.com",
   messagingSenderId: "612360827492",
   appId: "1:612360827492:web:684e5a5f3d61c50f496571",
   measurementId: "G-TXNV05T74J"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-export const auth = getAuth(app);
+// HMR-safe Firebase app initialization for Vite
+let app;
+if (!getApps().length) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApp(); // Prevent re-initialization
+}
 
-export const db = getFirestore(app); 
+// Firebase services
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+let analytics = null;
+if (typeof window !== 'undefined') {
+  analytics = getAnalytics(app);
+}
+
+export { app, auth, db, storage, analytics };
