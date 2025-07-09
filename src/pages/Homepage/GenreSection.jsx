@@ -1,27 +1,29 @@
-// src/components/GenreSection.jsx
+import { useTheme } from '../useTheme';
 
 function GenreSection() {
-    const genres = [
-      "Action", "Adventure", "Comedy", "Drama", "Fantasy",
-      "Horror", "Romance", "Sci-Fi", "Thriller", "Animation"
-    ];
-  
-    return (
-      <div className="py-8 px-4">
-        <h2 className="text-2xl font-bold mb-4">Browse by Genre</h2>
-        <div className="flex flex-wrap gap-4">
-          {genres.map((genre, index) => (
-            <button
-              key={index}
-              className="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-full text-white transition"
-            >
-              {genre}
-            </button>
-          ))}
-        </div>
+  const { theme } = useTheme();
+  const genres = [
+    "Action", "Adventure", "Comedy", "Drama", "Fantasy",
+    "Horror", "Romance", "Sci-Fi", "Thriller", "Animation"
+  ];
+
+  return (
+    <div className="py-8 px-4">
+      <p className={`text-2xl font-bold mb-4 ${theme.sectionTitle}`}>
+        Browse by Genre
+      </p>
+      <div className="flex flex-wrap gap-4">
+        {genres.map((genre, index) => (
+          <button
+            key={index}
+            className={`px-6 py-2 rounded-full transition ${theme.button} ${theme.text}`}
+          >
+            {genre}
+          </button>
+        ))}
       </div>
-    );
-  }
-  
-  export default GenreSection;
-  
+    </div>
+  );
+}
+
+export default GenreSection;

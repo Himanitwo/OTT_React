@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PlayCircle, Tv, Trash2 } from 'lucide-react';
+import { useTheme } from './useTheme';  // Adjust path if needed
 
 const initialContinueWatch = [
   {
@@ -31,37 +32,47 @@ const series = [
 const Watchlist = () => {
   const [continueWatchList, setContinueWatchList] = useState(initialContinueWatch);
   const [watchlist, setWatchlist] = useState(initialTrending);
+  const { theme } = useTheme();
 
   const handleDeleteContinue = (indexToDelete) => {
-    setContinueWatchList(prev => prev.filter((_, i) => i !== indexToDelete));
+    setContinueWatchList((prev) => prev.filter((_, i) => i !== indexToDelete));
   };
 
   const handleDeleteWatchlist = (indexToDelete) => {
-    setWatchlist(prev => prev.filter((_, i) => i !== indexToDelete));
+    setWatchlist((prev) => prev.filter((_, i) => i !== indexToDelete));
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white px-10 py-14 font-sans space-y-16">
-      
+    <div
+      className={`min-h-screen px-10 py-14 font-sans space-y-16 ${theme.background} ${theme.text}`}
+    >
       {/* Continue Watching */}
       <section>
         <div className="flex items-center gap-2 mb-4">
           <PlayCircle className="text-green-500" size={28} />
-          <h2 className="text-2xl font-bold">Continue Watching</h2>
+          <p className={`text-2xl font-bold ${theme.text}`}>{/* Use theme color for title if needed */}
+            Continue Watching
+          </p>
         </div>
         <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-2">
           {continueWatchList.map((item, index) => (
             <div
               key={index}
-              className="relative min-w-[260px] h-40 rounded-xl overflow-hidden bg-gray-800 shadow-lg hover:scale-105 transition-transform"
+              className={`relative min-w-[260px] h-40 rounded-xl overflow-hidden shadow-lg hover:scale-105 transition-transform ${theme.card}`}
             >
               <img
                 src={item.thumbnail}
                 alt={item.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent p-3 flex flex-col justify-end">
-                <p className="text-md font-semibold">{item.title}</p>
+              <div
+                className="absolute inset-0 p-3 flex flex-col justify-end"
+                style={{
+                  background:
+                    'linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent)',
+                }}
+              >
+                <p className={`text-md font-semibold ${theme.text}`}>{item.title}</p>
                 <p className="text-xs text-gray-300">{item.duration}</p>
               </div>
               <div className="absolute top-2 right-2 flex gap-2">
@@ -82,13 +93,13 @@ const Watchlist = () => {
       <section>
         <div className="flex items-center gap-2 mb-4">
           <PlayCircle className="text-yellow-500" size={28} />
-          <h2 className="text-2xl font-bold">Your Watchlist</h2>
+          <p className={`text-2xl font-bold ${theme.text}`}>Your Watchlist</p>
         </div>
         <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-2">
           {watchlist.map((item, index) => (
             <div
               key={index}
-              className="relative min-w-[140px] h-56 rounded-xl overflow-hidden shadow-md bg-gray-900 hover:scale-105 transition-transform"
+              className={`relative min-w-[140px] h-56 rounded-xl overflow-hidden shadow-md hover:scale-105 transition-transform ${theme.card}`}
             >
               <img
                 src={item.thumbnail}
@@ -111,13 +122,13 @@ const Watchlist = () => {
       <section>
         <div className="flex items-center gap-2 mb-4">
           <Tv className="text-blue-500" size={28} />
-          <h2 className="text-2xl font-bold">Popular Series</h2>
+          <p className={`text-2xl font-bold ${theme.text}`}>Popular Series</p>
         </div>
         <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-2">
           {series.map((item, index) => (
             <div
               key={index}
-              className="min-w-[140px] h-56 rounded-xl overflow-hidden shadow-md bg-gray-900 hover:scale-105 transition-transform"
+              className={`min-w-[140px] h-56 rounded-xl overflow-hidden shadow-md hover:scale-105 transition-transform ${theme.card}`}
             >
               <img
                 src={item.thumbnail}

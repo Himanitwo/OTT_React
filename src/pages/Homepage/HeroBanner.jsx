@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import './HeroBanner.css';
 import {
   FaHeart,
   FaRegHeart,
@@ -9,6 +8,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
 } from 'react-icons/fa';
+import { useTheme } from '../useTheme';
 
 const banners = [
   {
@@ -32,11 +32,10 @@ const banners = [
 ];
 
 const swipeConfidenceThreshold = 10000;
-const swipePower = (offset, velocity) => {
-  return Math.abs(offset) * velocity;
-};
+const swipePower = (offset, velocity) => Math.abs(offset) * velocity;
 
 function HeroBanner() {
+  const { theme } = useTheme();
   const [[currentIndex, direction], setCurrentIndex] = useState([0, 0]);
   const [liked, setLiked] = useState(false);
   const [added, setAdded] = useState(false);
@@ -54,7 +53,6 @@ function HeroBanner() {
     setAdded(false);
   };
 
-  // Auto-slide every 7s
   useEffect(() => {
     const timer = setInterval(() => {
       paginate(1);
@@ -82,7 +80,7 @@ function HeroBanner() {
   const currentBanner = banners[currentIndex];
 
   return (
-    <div className="hero-banner relative w-full h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden rounded-2xl shadow-xl">
+    <div className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden rounded-2xl shadow-xl mb-8">
       <AnimatePresence initial={false} custom={direction}>
         <motion.img
           key={currentBanner.id}
@@ -102,39 +100,43 @@ function HeroBanner() {
           dragElastic={1}
           onDragEnd={(e, { offset, velocity }) => {
             const swipe = swipePower(offset.x, velocity.x);
-            if (swipe < -swipeConfidenceThreshold) {
-              paginate(1);
-            } else if (swipe > swipeConfidenceThreshold) {
-              paginate(-1);
-            }
+            if (swipe < -swipeConfidenceThreshold) paginate(1);
+            else if (swipe > swipeConfidenceThreshold) paginate(-1);
           }}
           className="absolute w-full h-full object-cover"
         />
       </AnimatePresence>
 
-      <div className="overlay" />
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent z-10" />
 
       {/* Content */}
-      <div className="banner-content">
-        <h1>{currentBanner.title}</h1>
-        <p>{currentBanner.description}</p>
+      <div className="absolute bottom-8 left-8 z-20 max-w-xl">
+        <h1 className={`text-3xl md:text-4xl font-bold ${theme.bannerContent}`}>
+          {currentBanner.title}
+        </h1>
+        <p className={`mt-2 ${theme.bannerContent}`}>
+          {currentBanner.description}
+        </p>
 
         <div className="flex gap-4 mt-4 flex-wrap">
-          <button className="primary-button">Play Now</button>
+          <button className={`px-6 py-2 rounded-lg font-medium backdrop-blur-md ${theme.button}`}>
+            Play Now
+          </button>
 
           <button
-            className={`secondary-button ${liked ? 'active' : ''}`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${theme.button} backdrop-blur-md`}
             onClick={() => setLiked(!liked)}
           >
-            {liked ? <FaHeart className="icon" /> : <FaRegHeart className="icon" />}
+            {liked ? <FaHeart /> : <FaRegHeart />}
             <span>{liked ? 'Liked' : 'Like'}</span>
           </button>
 
           <button
-            className={`secondary-button ${added ? 'active' : ''}`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg backdrop-blur-md ${theme.button}`}
             onClick={() => setAdded(!added)}
           >
-            {added ? <FaCheck className="icon" /> : <FaPlus className="icon" />}
+            {added ? <FaCheck /> : <FaPlus />}
             <span>{added ? 'Added' : 'Add'}</span>
           </button>
         </div>
@@ -154,16 +156,16 @@ function HeroBanner() {
         <FaChevronRight />
       </button>
 
-      {/* Dots Indicator */}
+      {/* Dots */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
         {banners.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentIndex([idx, idx > currentIndex ? 1 : -1])}
-            className={`w-3 h-3 rounded-full ${
+            className={`w-3 h-3 rounded-full transition ${
               idx === currentIndex ? 'bg-yellow-400' : 'bg-white/40'
-            } transition`}
-          ></button>
+            }`}
+          />
         ))}
       </div>
     </div>
