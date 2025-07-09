@@ -7,7 +7,6 @@ import { connectDB } from "./backend/config/db.js";
 const app = express();
 app.use(cors());
 app.use(express.json());
-
 await connectDB(); // ✅ Ensure connection before routes
 
 app.use("/api/profile", profileroutes);
