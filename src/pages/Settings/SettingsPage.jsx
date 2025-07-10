@@ -1,17 +1,19 @@
 // src/components/SettingsPage.jsx
 import React, { useState } from 'react';
+import {getAuth} from 'firebase/auth';
 import './SettingsPage.css';
 
 function SettingsPage() {
+  
+  
+  const auth = getAuth();
+  const user = auth.currentUser;
+  
   const [activeSection, setActiveSection] = useState('Account');
-
+  
   const menuItems = [
     'Account',
-    'Subscription & Billing',
     'Profiles & Parental Controls',
-    'Playback Settings',
-    'Notifications',
-    'Viewing History',
     'Downloads & Devices',
     'Data & Privacy',
     'Help Center'
@@ -43,20 +45,6 @@ function SettingsPage() {
           </div>
         );
 
-      case 'Subscription & Billing':
-        return (
-          <div>
-            <h1>Subscription & Billing</h1>
-            <p>Plan: Premium (4K + HDR)</p>
-            <p>Next billing date: June 15, 2025</p>
-            <div className="actions">
-              <button>Upgrade Plan</button>
-              <button>View Invoices</button>
-              <button className="danger">Cancel Subscription</button>
-            </div>
-          </div>
-        );
-
       case 'Profiles & Parental Controls':
         return (
           <div>
@@ -72,19 +60,6 @@ function SettingsPage() {
           </div>
         );
 
-      case 'Playback Settings':
-        return (
-          <div>
-            <h1>Playback Settings</h1>
-            <p>Video Quality: Auto (adjusts with bandwidth)</p>
-            <p>Audio Language: English</p>
-            <div className="actions">
-              <button>Change Video Quality</button>
-              <button>Set Default Language</button>
-            </div>
-          </div>
-        );
-
       case 'Notifications':
         return (
           <div>
@@ -93,20 +68,6 @@ function SettingsPage() {
             <p>Push Notifications: Disabled</p>
             <div className="actions">
               <button>Manage Notification Settings</button>
-            </div>
-          </div>
-        );
-
-      case 'Viewing History':
-        return (
-          <div>
-            <h1>Viewing History</h1>
-            <ul>
-              <li>Movie: The Grand Adventure — Watched on May 5, 2025</li>
-              <li>Series: Space Explorers — Watched on May 4, 2025</li>
-            </ul>
-            <div className="actions">
-              <button>Clear Viewing History</button>
             </div>
           </div>
         );

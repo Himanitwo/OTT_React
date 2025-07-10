@@ -10,18 +10,18 @@ function Homepage() {
   const navigate = useNavigate();
   const { theme } = useTheme();
 
-  const handleNavigate = () => {
-    navigate('/badges');
-  };
+  // const handleNavigate = () => {
+  //   navigate('/badges');
+  // };
 
   return (
     <div className={`min-h-screen pt-16 ${theme.background}`}>
-      <button 
+      {/* <button 
         onClick={handleNavigate}
         className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-md font-bold transition ${theme.button} ${theme.buttonText}`}
       >
         Your Badges
-      </button>
+      </button> */}
 
       <HeroBanner />
       <GenreSection />
